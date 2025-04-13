@@ -1,7 +1,7 @@
 package com.taskflow.backend.controller;
 
-import com.taskflow.model.User;
-import com.taskflow.service.UserService;
+import com.taskflow.backend.model.User;
+import com.taskflow.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -2,28 +2,34 @@ package com.taskflow.backend.service;
 
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.UserRepository;
-import com.taskflow.backend.security.CurrentUser;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final CurrentUser currentUser;
 
-    public UserService(UserRepository userRepository, CurrentUser currentUser) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.currentUser = currentUser;
     }
 
-    // Get the currently authenticated user's profile
+    // Get authenticated user based on security context
+    private User getAuthenticatedUser() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    }
+
+    // Return the profile of the current user
     public User getCurrentUser() {
-        return currentUser.get();
+        return getAuthenticatedUser();
     }
 
-    // Update authenticated user's profile info
+    // Update current user profile
     public User updateUser(User updatedUser) {
-        User user = currentUser.get();
+        User user = getAuthenticatedUser();
         user.setName(updatedUser.getName());
         user.setEmail(updatedUser.getEmail());
         return userRepository.save(user);
