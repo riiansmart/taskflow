@@ -1,4 +1,11 @@
 .logo-wrapper {
   display: flex;
-  align-items: center;
+  /* align icon bottom to text baseline */
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.logo-wrapper .logo {
+  /* reset forced line-height for baseline alignment */
+  line-height: 1;
 } 

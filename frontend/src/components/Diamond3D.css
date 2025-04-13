@@ -1,7 +1,8 @@
 .diamond3d-container {
-  width: 48px;
-  height: 48px;
+  width: 2.5rem;
+  height: 2.5rem;
   position: relative;
+  cursor: pointer;
 }
 .diamond3d-container canvas {
   width: 100%;

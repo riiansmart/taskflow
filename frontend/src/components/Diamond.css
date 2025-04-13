@@ -15,7 +15,6 @@
   transform: rotateZ(45deg) rotateX(60deg) rotateY(0deg);
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  animation: coinFlip 3s linear infinite;
   position: relative;
   box-shadow: var(--shadow);
   transition: all 0.3s ease;
@@ -52,7 +51,7 @@
   z-index: 2;
 }
 .diamond-container:hover .diamond {
-  animation-duration: 1.5s;
+  animation: coinFlip 3s linear infinite;
   box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.6);
 }
 @keyframes coinFlip {

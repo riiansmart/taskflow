@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useTheme } from '../context/ThemeContext';
@@ -6,52 +6,61 @@ import './Diamond3D.css';
 import { Edges } from '@react-three/drei';
 
 function SpinningDiamond({ primary, secondary }: { primary: string; secondary: string }) {
+  // group for axis tilt and precession
+  const group = useRef<THREE.Group>(null!);
   const mesh = useRef<THREE.Mesh>(null!);
   const [hovered, setHovered] = useState(false);
+  // apply static diagonal plus perspective tilt for a slanted diamond view
+  useEffect(() => {
+    const diagonalAng = Math.PI / 4;   // 45° tilt in screen plane
+    const perspectiveAng = Math.PI / 3; // 60° tilt backward for depth
+    group.current.rotation.x = perspectiveAng;
+    group.current.rotation.z = diagonalAng;
+  }, []);
+  // precession cycle: full rotation in 120 seconds for demo
+  const PRECESSION_SPEED = 2 * Math.PI / 120; // rad per second
   useFrame((_, delta) => {
-    if (hovered) mesh.current.rotation.y += delta;
+    // prograde spin around local Y
+    const spinSpeed = hovered ? delta : delta * 0.2;
+    mesh.current.rotation.y += spinSpeed;
+    // group precession around global Y
+    group.current.rotation.y += PRECESSION_SPEED * delta;
   });
   return (
-    <mesh
-      ref={mesh}
-      castShadow
-      receiveShadow
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
-      <octahedronGeometry args={[1.2, 0]} />
-      <meshPhysicalMaterial
-        color={primary}
-        emissive={secondary}
-        metalness={1}
-        roughness={0}
-        transmission={0.9}
-        opacity={0.4}
-        transparent
-        clearcoat={1}
-        clearcoatRoughness={0.1}
-      />
-      <Edges color={secondary} threshold={15} />
-    </mesh>
+    <group ref={group}>
+      <mesh
+        ref={mesh}
+        castShadow
+        receiveShadow
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <octahedronGeometry args={[1.2, 0]} />
+        <meshPhysicalMaterial
+          color={primary}
+          emissive={secondary}
+          metalness={1}
+          roughness={0}
+          transmission={0.9}
+          opacity={0.4}
+          transparent
+          clearcoat={1}
+          clearcoatRoughness={0.1}
+        />
+        <Edges color={secondary} threshold={15} />
+      </mesh>
+    </group>
   );
 }
 
 export default function Diamond3D() {
-  const { isLightMode } = useTheme();
-  const [colors, setColors] = useState({ primary: '', secondary: '' });
-  useEffect(() => {
-    const style = getComputedStyle(document.body);
-    setColors({
-      primary: style.getPropertyValue('--accent-primary').trim(),
-      secondary: style.getPropertyValue('--accent-secondary').trim(),
-    });
-  }, [isLightMode]);
+  const { accentPrimary: primary, accentSecondary: secondary } = useTheme();
   return (
     <div className="diamond3d-container">
-      <Canvas shadows camera={{ position: [0, 0, 3], fov: 50 }}>
+      <Canvas key={`${primary}-${secondary}`} shadows camera={{ position: [0, 0, 3], fov: 50 }}>
         <ambientLight intensity={0.3} />
         <directionalLight castShadow intensity={0.8} position={[2, 5, 2]} />
-        <SpinningDiamond primary={colors.primary} secondary={colors.secondary} />
+        <SpinningDiamond primary={primary} secondary={secondary} />
       </Canvas>
     </div>
   );
