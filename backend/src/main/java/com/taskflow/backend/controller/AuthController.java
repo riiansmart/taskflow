@@ -1,9 +1,9 @@
 package com.taskflow.backend.controller;
 
-import com.taskflow.dto.JwtResponse;
-import com.taskflow.dto.LoginRequest;
-import com.taskflow.dto.RegisterRequest;
-import com.taskflow.service.AuthService;
+import com.taskflow.backend.dto.JwtResponse;
+import com.taskflow.backend.dto.LoginRequest;
+import com.taskflow.backend.dto.RegisterRequest;
+import com.taskflow.backend.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

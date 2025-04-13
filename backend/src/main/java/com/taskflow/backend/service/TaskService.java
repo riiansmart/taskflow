@@ -2,8 +2,10 @@ package com.taskflow.backend.service;
 
 import com.taskflow.backend.model.Task;
 import com.taskflow.backend.model.User;
-import com.taskflow.rbackend.epository.TaskRepository;
-import com.taskflow.backend.security.CurrentUser;
+import com.taskflow.backend.repository.TaskRepository;
+import com.taskflow.backend.repository.UserRepository;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,32 +14,39 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
-    private final CurrentUser currentUser;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, CurrentUser currentUser) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
-        this.currentUser = currentUser;
+        this.userRepository = userRepository;
     }
 
-    // Get all tasks for current user
+    // Get the currently authenticated user from security context
+    private User getAuthenticatedUser() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    }
+
+    // Get all tasks for the current user
     public List<Task> getUserTasks() {
-        User user = currentUser.get();
+        User user = getAuthenticatedUser();
         return taskRepository.findByUserId(user.getId());
     }
 
-    // Get specific task by ID
+    // Get a specific task by ID
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 
-    // Create a new task and associate with current user
+    // Create a new task and assign to the current user
     public Task createTask(Task task) {
-        task.setUser(currentUser.get());
+        task.setUser(getAuthenticatedUser());
         return taskRepository.save(task);
     }
 
-    // Update existing task
+    // Update an existing task
     public Task updateTask(Long id, Task newTask) {
         Task existing = getTaskById(id);
         existing.setTitle(newTask.getTitle());
@@ -48,7 +57,7 @@ public class TaskService {
         return taskRepository.save(existing);
     }
 
-    // Delete task by ID
+    // Delete a task by ID
     public void deleteTask(Long id) {
         taskRepository.deleteById(id);
     }

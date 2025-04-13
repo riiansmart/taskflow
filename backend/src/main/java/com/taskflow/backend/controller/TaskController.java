@@ -1,9 +1,8 @@
 package com.taskflow.backend.controller;
 
-import com.taskflow.model.Task;
-import com.taskflow.service.TaskService;
+import com.taskflow.backend.model.Task;
+import com.taskflow.backend.service.TaskService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
