@@ -1,4 +1,4 @@
-package com.taskflow.controller;
+package com.taskflow.backend.controller;
 
 import com.taskflow.model.User;
 import com.taskflow.service.UserService;
