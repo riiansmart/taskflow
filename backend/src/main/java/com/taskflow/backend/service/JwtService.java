@@ -1,7 +1,7 @@
 package com.taskflow.backend.service;
 
-import com.taskflow.model.User;
-import com.taskflow.security.JwtUtils;
+import com.taskflow.backend.model.User;
+import com.taskflow.backend.security.JwtUtils;
 import org.springframework.stereotype.Service;
 
 @Service
