@@ -1,9 +1,9 @@
 package com.taskflow.backend.service;
 
-import com.taskflow.model.Task;
-import com.taskflow.model.User;
-import com.taskflow.repository.TaskRepository;
-import com.taskflow.security.CurrentUser;
+import com.taskflow.backend.model.Task;
+import com.taskflow.backend.model.User;
+import com.taskflow.rbackend.epository.TaskRepository;
+import com.taskflow.backend.security.CurrentUser;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

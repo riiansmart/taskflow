@@ -1,8 +1,8 @@
 package com.taskflow.backend.service;
 
-import com.taskflow.model.User;
-import com.taskflow.repository.UserRepository;
-import com.taskflow.security.CurrentUser;
+import com.taskflow.backend.model.User;
+import com.taskflow.backend.repository.UserRepository;
+import com.taskflow.backend.security.CurrentUser;
 import org.springframework.stereotype.Service;
 
 @Service

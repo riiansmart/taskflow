@@ -1,11 +1,11 @@
 package com.taskflow.backend.service;
 
-import com.taskflow.dto.JwtResponse;
-import com.taskflow.dto.LoginRequest;
-import com.taskflow.dto.RegisterRequest;
-import com.taskflow.model.User;
-import com.taskflow.repository.UserRepository;
-import com.taskflow.security.JwtUtils;
+import com.taskflow.backend.dto.JwtResponse;
+import com.taskflow.backend.dto.LoginRequest;
+import com.taskflow.backend.dto.RegisterRequest;
+import com.taskflow.backend.model.User;
+import com.taskflow.backend.repository.UserRepository;
+import com.taskflow.backend.security.JwtUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

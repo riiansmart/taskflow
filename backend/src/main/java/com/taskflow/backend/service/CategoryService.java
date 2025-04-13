@@ -1,7 +1,7 @@
 package com.taskflow.backend.service;
 
-import com.taskflow.model.Category;
-import com.taskflow.repository.CategoryRepository;
+import com.taskflow.backend.model.Category;
+import com.taskflow.backend.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
