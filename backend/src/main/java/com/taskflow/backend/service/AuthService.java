@@ -24,14 +24,30 @@ public class AuthService {
 
     // Authenticate user and return JWT response
     public JwtResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        System.out.println("=== LOGIN DEBUG START ===");
+        System.out.println("Email input: " + request.getEmail());
+        System.out.println("Password input: " + request.getPassword());
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> {
+                    System.out.println("User not found for email: " + request.getEmail());
+                    return new RuntimeException("Invalid email or password");
+                });
+
+        System.out.println("Found user: " + user.getEmail());
+        System.out.println("Encoded password in DB: " + user.getPassword());
+        boolean match = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        System.out.println("Password match result: " + match);
+
+        if (!match) {
+            System.out.println("Password did not match!");
             throw new RuntimeException("Invalid email or password");
         }
 
         String token = jwtUtils.generateToken(user);
+        System.out.println("JWT Token generated: " + token);
+        System.out.println("=== LOGIN DEBUG END ===");
+
         return new JwtResponse(token, user);
     }
 
