@@ -22,15 +22,21 @@ public class TaskService {
     }
 
     // Get the currently authenticated user from security context
-    private User getAuthenticatedUser() {
-        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    private String getAuthenticatedUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof org.springframework.security.core.userdetails.User userDetails) {
+            return userDetails.getUsername(); // this is the email
+        }
+
+        return null;
     }
 
     // Get all tasks for the current user
     public List<Task> getUserTasks() {
-        User user = getAuthenticatedUser();
+        String username = getAuthenticatedUser();
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return taskRepository.findByUserId(user.getId());
     }
 
@@ -42,7 +48,10 @@ public class TaskService {
 
     // Create a new task and assign to the current user
     public Task createTask(Task task) {
-        task.setUser(getAuthenticatedUser());
+        String username = getAuthenticatedUser();
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        task.setUser(user);
         return taskRepository.save(task);
     }
 
