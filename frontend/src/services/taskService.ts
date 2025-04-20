@@ -8,14 +8,16 @@ const API_URL = "/api/tasks";
 
 // Fetch all tasks for the current user
 export const getTasks = async () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token')
 
-  return await axios.get(API_URL, {
+  const response = await axios.get('/api/tasks', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  });
-};
+  })
+
+  return response.data // This returns just the task array
+}
 
 // Get a single task by ID
 export const getTaskById = async (id: number, token: string): Promise<Task> => {
