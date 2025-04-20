@@ -2,13 +2,19 @@
 
 import api from './api';
 import { Task } from '../types/Task';
+import axios from "axios";
+
+const API_URL = "/api/tasks";
 
 // Fetch all tasks for the current user
-export const getTasks = async (token: string): Promise<Task[]> => {
-  const response = await api.get('/tasks', {
-    headers: { Authorization: `Bearer ${token}` }, // Add token if not globally set
+export const getTasks = async () => {
+  const token = localStorage.getItem("token");
+
+  return await axios.get(API_URL, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  return response.data;
 };
 
 // Get a single task by ID

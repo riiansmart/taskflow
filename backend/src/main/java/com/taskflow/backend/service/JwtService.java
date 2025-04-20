@@ -2,6 +2,8 @@ package com.taskflow.backend.service;
 
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.security.JwtUtils;
+
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +25,7 @@ public class JwtService {
         return jwtUtils.extractUsername(token);
     }
 
-    public boolean isTokenValid(String token, User user) {
-        return jwtUtils.validateToken(token, user);
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        return jwtUtils.validateToken(token, userDetails);
     }
 }

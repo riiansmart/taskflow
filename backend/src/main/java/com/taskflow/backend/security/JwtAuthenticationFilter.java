@@ -43,9 +43,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         email = jwtUtils.extractUsername(token);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            var userDetails = userDetailsService.loadUserByUsername(email);
+            var userDetails = userDetailsService.loadUserByUsername(email); // ✅ no cast here
 
-            if (jwtUtils.validateToken(token, (User) userDetails)) {
+            if (jwtUtils.validateToken(token, userDetails)) { // ✅ use UserDetails, not User
                 var authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );
