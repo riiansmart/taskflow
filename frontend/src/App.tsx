@@ -12,6 +12,7 @@ function App() {
   const [token, setToken] = useState('')
   const [tasks, setTasks] = useState<Task[]>([])
 
+  // Handle login and set token
   const handleLogin = async () => {
     try {
       const res = await loginUser({ email, password })
@@ -23,6 +24,7 @@ function App() {
     }
   }
 
+  // Register a new user
   const handleRegister = async () => {
     try {
       await registerUser({ name, email, password })
@@ -33,11 +35,13 @@ function App() {
     }
   }
 
+  // Fetch tasks from the server
   const fetchTasks = async () => {
     try {
-      const data = await getTasks(token)
-      setTasks(data)
-    } catch {
+      const tasks = await getTasks()
+      setTasks(tasks) // tasks should now be an array
+    } catch (err) {
+      console.error("Fetch failed:", err)
       alert('Fetch failed')
     }
   }
