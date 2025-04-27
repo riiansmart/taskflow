@@ -6,7 +6,7 @@ import org.mockito.MockedStatic;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.UserRepository;
@@ -21,6 +21,19 @@ class UserServiceTests {
     private final UserRepository userRepository = mock(UserRepository.class);
     private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
     private final UserService userService = new UserService(userRepository, passwordEncoder);
+
+    @BeforeEach
+    void setupSecurityContext() {
+        SecurityContext context = mock(SecurityContext.class);
+        Authentication auth = mock(Authentication.class);
+
+        when(auth.getPrincipal()).thenReturn("test@example.com");
+        when(context.getAuthentication()).thenReturn(auth);
+
+        // Mock the static SecurityContextHolder.getContext()
+        MockedStatic<SecurityContextHolder> securityContextHolderMock = mockStatic(SecurityContextHolder.class);
+        securityContextHolderMock.when(SecurityContextHolder::getContext).thenReturn(context);
+    }
 
     @BeforeEach
     void setupSecurityContext() {
