@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
+import NewTaskPage from './pages/NewTaskPage';
 import { Layout } from './components/Layout';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/tasks/new" element={<NewTaskPage />} />
         
         {/* 404 page */}
         <Route path="*" element={<NotFoundPage />} />

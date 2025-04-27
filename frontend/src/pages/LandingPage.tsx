@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import Navbar from '../components/Navbar'
 import { TaskListPreview } from '../components/TaskListPreview'
 import React from 'react'
+import Navbar from '../components/Navbar'
 
 export default function LandingPage() {
   return (
