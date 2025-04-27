@@ -2,8 +2,8 @@ import React from 'react'
 
 export function TaskListPreview() {
   return (
-    <div className="task-list" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div className="task-list-header">
+    <div className="task-list" style={{ width: '100%', margin: '0 auto' }}>
+      <div className="task-list-header" style={{ gridTemplateColumns: '40px minmax(150px, 1fr) repeat(5, minmax(100px, auto))' }}>
         <div className="task-list-header-item task-header-checkbox">
           <input type="checkbox" className="task-checkbox" disabled />
         </div>
