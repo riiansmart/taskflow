@@ -6,6 +6,7 @@ import org.mockito.MockedStatic;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.UserRepository;
@@ -18,7 +19,8 @@ import java.util.Optional;
 class UserServiceTests {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final UserService userService = new UserService(userRepository);
+    private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+    private final UserService userService = new UserService(userRepository, passwordEncoder);
 
     @BeforeEach
     void setupSecurityContext() {

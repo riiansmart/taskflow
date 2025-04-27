@@ -23,7 +23,7 @@ const DashboardPage = () => {
     if (!token) return;
     
     setLoading(true);
-    getTasks(token)
+    getTasks()
       .then(taskData => {
         setTasks(taskData);
         setLoading(false);
@@ -41,7 +41,7 @@ const DashboardPage = () => {
     
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
-        await deleteTask(id, token);
+        await deleteTask(id);
         setTasks(tasks.filter(task => task.id !== id));
       } catch (err) {
         console.error('Failed to delete task:', err);

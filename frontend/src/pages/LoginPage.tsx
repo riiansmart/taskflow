@@ -28,10 +28,29 @@ export default function LoginPage() {
     setError(null);
     
     try {
+      console.log('Attempting login with:', form);
       const response = await loginUser(form); // API call
-      login(response.token, response.user);   // Store session
-      navigate('/dashboard');                 // Redirect on success
-    } catch {
+      console.log('Login response:', response);
+      
+      // Check if response has the expected structure
+      if (response.data && response.data.token) {
+        // Create a basic user object if user is null
+        const user = response.data.user || {
+          id: 0,
+          name: form.email.split('@')[0], // Use email username as name
+          email: form.email,
+          role: 'USER'
+        };
+        
+        login(response.data.token, user);   // Store session
+        console.log('Auth context updated, navigating to dashboard');
+        navigate('/dashboard');                 // Redirect on success
+      } else {
+        console.error('Unexpected response format:', response);
+        setError('Server returned an unexpected response format');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
       setError('Invalid credentials');
     } finally {
       setIsLoading(false);
