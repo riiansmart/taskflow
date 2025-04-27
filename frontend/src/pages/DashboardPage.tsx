@@ -7,7 +7,7 @@ import { formatDate, isOverdue } from '../utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardPage = () => {
-  const { token, user } = useAuth();
+  const { token,  } = useAuth();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -316,12 +316,15 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <button 
-        className="add-task-button glow-effect"
-        onClick={() => navigate('/tasks/new')}
-      >
-        <i className="fas fa-plus"></i>
-      </button>
+      {/* Add task button wrapper to push it down below content */}
+      <div className="add-task-container">
+        <button
+          className="add-task-button glow-effect"
+          onClick={() => navigate('/tasks/new')}
+        >
+          <i className="fas fa-plus"></i>
+        </button>
+      </div>
     </>
   );
 };

@@ -19,3 +19,5 @@ node_modules
 .env.example.test.local
 .env.example.production.local
 
+
+.fake
