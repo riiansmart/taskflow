@@ -1,22 +1,31 @@
 // Top nav bar, links, logout
 
-import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth'; // Custom hook for accessing auth context
+import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import React from 'react';
 
-const Navbar = () => {
-  const { user, logout } = useAuth(); // Get current user and logout function
-
+export function Navbar() {
+  const { toggleTheme } = useTheme();
+  const location = useLocation();
+  const hideAuthLinks = location.pathname === '/login' || location.pathname === '/register';
   return (
-    <nav className="navbar">
-      <Link to="/dashboard">TaskFlow</Link> {/* Link to dashboard */}
-      {user && (
-        <>
-          <Link to="/profile">Profile</Link> {/* Link to profile page */}
-          <button onClick={logout}>Logout</button> {/* Logout button */}
-        </>
-      )}
-    </nav>
+    <header className="header container">
+      <div className="logo">TaskFlow</div>
+      <div className="user-section">
+        {!hideAuthLinks && (
+          <>
+            <Link to="/login" className="nav-link">
+              Login
+            </Link>
+            <Link to="/register" className="nav-link">
+              Register
+            </Link>
+          </>
+        )}
+        <div className="theme-toggle" id="theme-toggle" onClick={toggleTheme}></div>
+      </div>
+    </header>
   );
-};
+}
 
 export default Navbar;
