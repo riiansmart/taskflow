@@ -8,11 +8,20 @@
 
 - ✅ JWT-based user authentication and role-based access control
 - ✅ CRUD operations on tasks (Create, Read, Update, Delete)
-- ✅ Filter and sort tasks by category, due date, or priority
-- ✅ Responsive UI with Vite + React + TypeScript
-- ✅ Spring Boot + MySQL backend
-- ✅ Password hashing using BCrypt
-- ✅ Heroku/AWS-ready cloud deployment setup
+- ✅ Advanced task filtering and sorting:
+  - By status (Not Started, In Progress, Completed)
+  - By priority (Low, Medium, High)
+  - By due date
+  - Text search across task titles and descriptions
+- ✅ Bulk task operations (create, update, delete)
+- ✅ Responsive UI with dark/light theme support
+- ✅ Task categorization (Feature/Bug)
+- ✅ Modern UI with cyberpunk-inspired design
+- ✅ Real-time task status updates
+- ✅ User profile management
+- ✅ Secure password hashing with BCrypt
+- ✅ PostgreSQL database with Prisma ORM
+- ✅ Cloud-ready deployment configuration
 
 ---
 
@@ -20,10 +29,12 @@
 
 ```
 taskflow/
-├── backend/       # Spring Boot app
-│   └── src/...    # Java source files
-├── frontend/      # Vite + React app
-│   └── src/...    # React + TypeScript components
+├── backend/           # Spring Boot app
+│   └── src/...       # Java source files
+├── frontend/         # Vite + React app
+│   ├── src/...      # React + TypeScript components
+│   ├── prisma/      # Database schema and migrations
+│   └── public/      # Static assets
 └── README.md
 ```
 
@@ -32,20 +43,26 @@ taskflow/
 ## ⚙️ Technologies
 
 **Frontend**
-- React + Vite
+- React 18 + Vite
 - TypeScript
-- Axios, React Router DOM
+- React Router DOM v6
+- Axios for API calls
+- Prisma Client
+- CSS Modules + Custom Theme Support
 
 **Backend**
 - Java + Spring Boot
 - Spring Security + JWT
 - Spring Data JPA
-- MySQL
+- PostgreSQL
+- Prisma ORM
 
-**DevOps**
+**DevOps & Tools**
 - Maven
 - Git & GitHub
-- Heroku Cloud Deployment
+- Docker & Docker Compose
+- Prisma CLI
+- Node.js & npm
 
 ---
 
@@ -57,7 +74,7 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-Make sure to configure `application.properties` with your MySQL connection and JWT secret.
+Configure `application.properties` with your PostgreSQL connection and JWT secret.
 
 ### ⚛️ Frontend Setup
 ```bash
@@ -66,56 +83,45 @@ npm install
 npm run dev
 ```
 
-Ensure your Vite proxy is set to `http://localhost:8080` in `vite.config.ts`.
+The Vite dev server will start at `http://localhost:5173` with API proxy to `http://localhost:8080`.
 
-### 🗄️ Database & Prisma Local Setup
+### 🗄️ Database Setup
 
-1. Ensure Postgres is installed & running
-   - Install with your system package manager (e.g., `brew install postgresql` or `sudo apt-get install postgresql`), or use Docker Compose:
+1. Ensure PostgreSQL is installed & running
+   - Use Docker Compose:
      ```bash
      docker-compose up -d db
      ```
 
-2. Copy & configure your `.env` file:
+2. Configure environment variables:
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` and set:
+   Edit `.env`:
    ```dotenv
    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taskflow_dev?schema=public"
    JWT_SECRET="your-secret-key-change-this-in-production"
    ```
 
-3. Apply migrations & generate the Prisma client:
+3. Initialize database:
    ```bash
    npx prisma migrate dev
    npx prisma generate
    ```
 
-4. (Optional) Launch Prisma Studio for UI data browsing:
+4. (Optional) Launch Prisma Studio:
    ```bash
    npx prisma studio
    ```
 
-#### Handy NPM scripts
-
-You can add these under the `scripts` section in your `package.json`:
-```jsonc
-{
-  "scripts": {
-    "migrate:dev": "prisma migrate dev",
-    "db:push":     "prisma db push",
-    "generate":    "prisma generate",
-    "studio":      "prisma studio"
-  }
-}
-```
+### 🎨 Theme Customization
+The application supports both light and dark themes. Toggle between themes using the theme switcher in the navigation bar.
 
 ---
 
 ## 🧪 Testing
 - Backend: JUnit tests in `src/test/java`
-- Frontend: Coming soon with Vitest / React Testing Library
+- Frontend: Component testing with React Testing Library (coming soon)
 
 ---
 
@@ -125,27 +131,36 @@ This project is licensed under the MIT License.
 ---
 
 ## 📫 Contact
-Created by **Michael Smart** — [GitHub](https://github.com/riiansmart) | [LinkedIn](https://www.linkedin.com/in/michael-smart-47576a264/)
+**Michael Smart** - Project Owner & Backend Developer — [GitHub](https://github.com/riiansmart) | [LinkedIn](https://www.linkedin.com/in/michael-smart-47576a264/)
 
-## 🎉 After Merge: Quick Start
+**Owen Lindsey** - Frontend Developer — [GitHub](https://github.com/omniV1) | [LinkedIn](https://www.linkedin.com/in/owen-lindsey-5b323a23b/)
 
-After merging into `main`, teammates can get going with:
+## 🎉 Quick Start for Contributors
+
+After cloning the repository:
 
 ```bash
-# 1. Pull latest changes & install deps
-git pull origin main
+# 1. Install dependencies
 cd frontend
 npm install
 
-# 2. Ensure Postgres is running
-#    (system service or `docker-compose up -d db`)
+# 2. Start PostgreSQL
+docker-compose up -d db
 
-# 3. Apply existing migrations
+# 3. Set up environment
+cp .env.example .env
+# Edit .env with your settings
+
+# 4. Initialize database
 npx prisma migrate deploy
-
-# 4. Generate the client
 npx prisma generate
 
-# 5. Open Prisma Studio
-npx prisma studio
+# 5. Start development servers
+# Terminal 1 - Backend
+cd ../backend
+./mvnw spring-boot:run
+
+# Terminal 2 - Frontend
+cd ../frontend
+npm run dev
 ```
