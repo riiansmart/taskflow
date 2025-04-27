@@ -1,14 +1,17 @@
 package com.taskflow.backend.controller;
 
+import com.taskflow.backend.dto.ApiResponse;
+import com.taskflow.backend.dto.PageRequest;
 import com.taskflow.backend.model.Task;
 import com.taskflow.backend.service.TaskService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api/v1/tasks")
 @CrossOrigin
 public class TaskController {
 
@@ -18,34 +21,70 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    // Get all tasks for the current user
+    // Get all tasks for the current user with pagination
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getUserTasks());
+    public ResponseEntity<ApiResponse<Page<Task>>> getAllTasks(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String filter) {
+        
+        PageRequest pageRequest = new PageRequest(page, size, sort, direction);
+        pageRequest.setSearch(search);
+        pageRequest.setFilter(filter);
+        
+        Page<Task> tasks = taskService.getUserTasks(pageRequest);
+        return ResponseEntity.ok(ApiResponse.success(tasks));
     }
 
     // Get a specific task by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTask(@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTaskById(id));
+    public ResponseEntity<ApiResponse<Task>> getTask(@PathVariable Long id) {
+        Task task = taskService.getTaskById(id);
+        return ResponseEntity.ok(ApiResponse.success(task));
     }
 
     // Create a new task
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task task) {
-        return ResponseEntity.ok(taskService.createTask(task));
+    public ResponseEntity<ApiResponse<Task>> createTask(@RequestBody Task task) {
+        Task createdTask = taskService.createTask(task);
+        return ResponseEntity.ok(ApiResponse.success(createdTask, "Task created successfully"));
     }
 
     // Update an existing task
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
-        return ResponseEntity.ok(taskService.updateTask(id, task));
+    public ResponseEntity<ApiResponse<Task>> updateTask(@PathVariable Long id, @RequestBody Task task) {
+        Task updatedTask = taskService.updateTask(id, task);
+        return ResponseEntity.ok(ApiResponse.success(updatedTask, "Task updated successfully"));
     }
 
     // Delete a task
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTask(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<?>> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
-        return ResponseEntity.ok("Task deleted");
+        return ResponseEntity.ok(ApiResponse.success(null, "Task deleted successfully"));
+    }
+
+    // Bulk create tasks
+    @PostMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<Task>>> createBulkTasks(@RequestBody List<Task> tasks) {
+        List<Task> createdTasks = taskService.createBulkTasks(tasks);
+        return ResponseEntity.ok(ApiResponse.success(createdTasks, "Tasks created successfully"));
+    }
+
+    // Bulk update tasks
+    @PutMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<Task>>> updateBulkTasks(@RequestBody List<Task> tasks) {
+        List<Task> updatedTasks = taskService.updateBulkTasks(tasks);
+        return ResponseEntity.ok(ApiResponse.success(updatedTasks, "Tasks updated successfully"));
+    }
+
+    // Bulk delete tasks
+    @DeleteMapping("/bulk")
+    public ResponseEntity<ApiResponse<?>> deleteBulkTasks(@RequestBody List<Long> taskIds) {
+        taskService.deleteBulkTasks(taskIds);
+        return ResponseEntity.ok(ApiResponse.success(null, "Tasks deleted successfully"));
     }
 }

@@ -17,8 +17,13 @@ export interface LoginRequest {
   
   // JWT response payload from backend
   export interface JwtResponse {
-    token: string;
-    user: User;
+    status: string;
+    data: {
+      token: string;
+      user: User;
+    };
+    message: string;
+    metadata: any;
   }
   
   
