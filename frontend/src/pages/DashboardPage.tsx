@@ -1,20 +1,328 @@
-// List of tasks with filter/sort UI
-
-import TaskCard from '../components/TaskCard';
-import { useTasks } from '../hooks/useTasks';
+// src/pages/DashboardPage.tsx
+import { useState, useEffect } from 'react';
+import { getTasks, deleteTask } from '../services/taskService';
+import { useAuth } from '../hooks/useAuth';
+import { Task } from '../types/Task';
+import { formatDate, isOverdue } from '../utils/dateUtils';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardPage = () => {
-  const { tasks, loading, error } = useTasks(); // Fetch user tasks
+  const { token, user } = useAuth();
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'STATUS' | 'PRIORITY' | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'>('ALL');
+  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+
+  // Load tasks on component mount
+  useEffect(() => {
+    if (!token) return;
+    
+    setLoading(true);
+    getTasks(token)
+      .then(taskData => {
+        setTasks(taskData);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch tasks:', err);
+        setError('Failed to load tasks. Please try again.');
+        setLoading(false);
+      });
+  }, [token]);
+
+  // Handle task deletion
+  const handleDeleteTask = async (id: number) => {
+    if (!token) return;
+    
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await deleteTask(id, token);
+        setTasks(tasks.filter(task => task.id !== id));
+      } catch (err) {
+        console.error('Failed to delete task:', err);
+        setError('Failed to delete task. Please try again.');
+      }
+    }
+  };
+
+  // Handle editing a task
+  const handleEditTask = (id: number) => {
+    navigate(`/tasks/${id}/edit`);
+  };
+
+  // Handle checkbox selection
+  const handleTaskSelect = (id: number) => {
+    if (selectedTasks.includes(id)) {
+      setSelectedTasks(selectedTasks.filter(taskId => taskId !== id));
+    } else {
+      setSelectedTasks([...selectedTasks, id]);
+    }
+  };
+
+  // Handle select all checkbox
+  const handleSelectAll = () => {
+    if (selectedTasks.length === filteredTasks.length) {
+      setSelectedTasks([]);
+    } else {
+      setSelectedTasks(filteredTasks.map(task => task.id));
+    }
+  };
+
+  // Filter tasks based on search term and active filters
+  const filteredTasks = tasks.filter(task => {
+    // Text search filter
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (task.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+    
+    // Status filter
+    const matchesStatus = statusFilter === 'ALL' || 
+                         (statusFilter === 'TODO' && !task.completed) ||
+                         (statusFilter === 'DONE' && task.completed);
+    
+    // Priority filter
+    const matchesPriority = priorityFilter === 'ALL' || task.priority === priorityFilter;
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
 
   return (
-    <div>
-      <h1>Your Tasks</h1>
-      {loading && <p>Loading tasks...</p>}  {/* Show loading */}
-      {error && <p>{error}</p>}              {/* Show error */}
-      {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} onEdit={() => {}} onDelete={() => {}} />
-      ))} {/* Render all tasks */}
-    </div>
+    <>
+      <section className="welcome-section">
+        <h1 className="welcome-text">Welcome back</h1>
+        <p className="welcome-description">Here's a list of your tasks for this month</p>
+      </section>
+
+      <div className="toolbar">
+        <div className="search-container">
+          <i className="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Filter tasks..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="filter-options">
+          <button 
+            className={`filter-button ${activeFilter === 'STATUS' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('STATUS')}
+          >
+            <i className="fas fa-th-large"></i>
+            Status
+          </button>
+          <button 
+            className={`filter-button ${activeFilter === 'PRIORITY' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('PRIORITY')}
+          >
+            <i className="fas fa-list"></i>
+            Priority
+          </button>
+          <button 
+            className={`filter-button ${activeFilter === 'ALL' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveFilter('ALL');
+              setStatusFilter('ALL');
+              setPriorityFilter('ALL');
+            }}
+          >
+            <i className="fas fa-columns"></i>
+            All
+          </button>
+        </div>
+      </div>
+
+      {activeFilter === 'STATUS' && (
+        <div className="filter-tags">
+          <button 
+            className={`filter-tag ${statusFilter === 'ALL' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('ALL')}
+          >
+            All
+          </button>
+          <button 
+            className={`filter-tag ${statusFilter === 'TODO' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('TODO')}
+          >
+            To Do
+          </button>
+          <button 
+            className={`filter-tag ${statusFilter === 'DONE' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('DONE')}
+          >
+            Completed
+          </button>
+        </div>
+      )}
+
+      {activeFilter === 'PRIORITY' && (
+        <div className="filter-tags">
+          <button 
+            className={`filter-tag ${priorityFilter === 'ALL' ? 'active' : ''}`}
+            onClick={() => setPriorityFilter('ALL')}
+          >
+            All
+          </button>
+          <button 
+            className={`filter-tag ${priorityFilter === 'LOW' ? 'active' : ''}`}
+            onClick={() => setPriorityFilter('LOW')}
+          >
+            Low
+          </button>
+          <button 
+            className={`filter-tag ${priorityFilter === 'MEDIUM' ? 'active' : ''}`}
+            onClick={() => setPriorityFilter('MEDIUM')}
+          >
+            Medium
+          </button>
+          <button 
+            className={`filter-tag ${priorityFilter === 'HIGH' ? 'active' : ''}`}
+            onClick={() => setPriorityFilter('HIGH')}
+          >
+            High
+          </button>
+        </div>
+      )}
+
+      {error && <div className="error-message">{error}</div>}
+
+      <div className="task-list">
+        <div className="task-list-header">
+          <div className="task-list-header-item task-header-checkbox">
+            <input 
+              type="checkbox" 
+              className="task-checkbox" 
+              id="select-all"
+              checked={selectedTasks.length === filteredTasks.length && filteredTasks.length > 0}
+              onChange={handleSelectAll}
+            />
+          </div>
+          <div className="task-list-header-item task-header-id sortable">#</div>
+          <div className="task-list-header-item sortable">Title</div>
+          <div className="task-list-header-item task-header-type sortable">Type</div>
+          <div className="task-list-header-item sortable">Status</div>
+          <div className="task-list-header-item sortable">Priority</div>
+          <div className="task-list-header-item task-header-date sortable">Due Date</div>
+          <div className="task-list-header-item task-header-actions">Actions</div>
+        </div>
+        
+        <div className="task-list-body">
+          {loading ? (
+            <div className="loading-message">
+              <i className="fas fa-spinner fa-spin"></i> Loading tasks...
+            </div>
+          ) : filteredTasks.length === 0 ? (
+            <div className="empty-message">
+              <i className="fas fa-tasks"></i>
+              <p>No tasks found. Create a new task to get started!</p>
+            </div>
+          ) : (
+            filteredTasks.map(task => (
+              <div className="task-item" key={task.id}>
+                <div className="task-cell task-cell-checkbox">
+                  <input 
+                    type="checkbox" 
+                    className="task-checkbox" 
+                    checked={selectedTasks.includes(task.id)}
+                    onChange={() => handleTaskSelect(task.id)}
+                  />
+                </div>
+                <div className="task-cell task-cell-id">
+                  <span className="task-id">TASK-{task.id}</span>
+                </div>
+                <div className="task-cell">
+                  <div 
+                    className="task-title task-title-tooltip" 
+                    data-tooltip={task.description || "No description provided"}
+                  >
+                    {task.title}
+                  </div>
+                </div>
+                <div className="task-cell task-cell-type">
+                  <span className="task-type">
+                    <i className="fas fa-file-alt task-type-icon"></i>
+                    {task.categoryId ? "Feature" : "Task"}
+                  </span>
+                </div>
+                <div className="task-cell">
+                  {task.completed ? (
+                    <span className="status-pill status-done">
+                      <i className="fas fa-check-circle"></i>
+                      Done
+                    </span>
+                  ) : isOverdue(task.dueDate) ? (
+                    <span className="status-pill status-in-progress">
+                      <i className="fas fa-exclamation-circle"></i>
+                      Overdue
+                    </span>
+                  ) : (
+                    <span className="status-pill status-todo">
+                      <i className="fas fa-circle-notch"></i>
+                      Todo
+                    </span>
+                  )}
+                </div>
+                <div className="task-cell">
+                  <span className={`priority-indicator priority-${task.priority.toLowerCase()}`}>
+                    <span className={`priority-dot dot-${task.priority.toLowerCase()}`}></span>
+                    {task.priority}
+                  </span>
+                </div>
+                <div className="task-cell task-cell-date">
+                  <span className={`task-due ${isOverdue(task.dueDate) ? 'overdue' : ''}`}>
+                    {formatDate(task.dueDate)}
+                  </span>
+                </div>
+                <div className="task-cell task-cell-actions">
+                  <div className="action-buttons">
+                    <button 
+                      className="action-button edit-button"
+                      onClick={() => handleEditTask(task.id)}
+                    >
+                      <i className="fas fa-edit"></i>
+                    </button>
+                    <button 
+                      className="action-button delete-button"
+                      onClick={() => handleDeleteTask(task.id)}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="pagination">
+        <div className="page-info">
+          Showing {filteredTasks.length} of {tasks.length} tasks
+        </div>
+        {/* We'll implement pagination later if needed */}
+        <div className="page-controls">
+          <button className="page-button disabled">
+            <i className="fas fa-chevron-left"></i>
+          </button>
+          <button className="page-button active">1</button>
+          <button className="page-button disabled">
+            <i className="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <button 
+        className="add-task-button glow-effect"
+        onClick={() => navigate('/tasks/new')}
+      >
+        <i className="fas fa-plus"></i>
+      </button>
+    </>
   );
 };
 
