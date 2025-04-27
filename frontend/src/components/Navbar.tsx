@@ -2,12 +2,8 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import React from 'react';
-<<<<<<< HEAD
-=======
 import Diamond3D from './Diamond3D';
 import './Navbar.css';
->>>>>>> O-Dev
 
 export function Navbar() {
   const { toggleTheme } = useTheme();
@@ -15,14 +11,10 @@ export function Navbar() {
   const hideAuthLinks = location.pathname === '/login' || location.pathname === '/register';
   return (
     <header className="header container">
-<<<<<<< HEAD
-      <div className="logo">TaskFlow</div>
-=======
       <div className="logo-wrapper">
         <Diamond3D />
         <div className="logo">TaskFlow</div>
       </div>
->>>>>>> O-Dev
       <div className="user-section">
         {!hideAuthLinks && (
           <>

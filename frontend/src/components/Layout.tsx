@@ -1,13 +1,9 @@
-import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import '../cyberpunk.css';
-<<<<<<< HEAD
-=======
 import Diamond3D from './Diamond3D';
 import './Navbar.css';
->>>>>>> O-Dev
 
 export function Layout() {
   const { toggleTheme } = useTheme();
@@ -18,14 +14,10 @@ export function Layout() {
   return (
     <div className="container">
       <header className="header">
-<<<<<<< HEAD
-        <div className="logo">TaskFlow</div>
-=======
         <div className="logo-wrapper">
           <Diamond3D />
           <div className="logo">TaskFlow</div>
         </div>
->>>>>>> O-Dev
         <div className="user-section">
           <Link to={isProfilePage ? "/dashboard" : "/profile"} className="nav-link">
             {isProfilePage ? "Dashboard" : "Profile"}
