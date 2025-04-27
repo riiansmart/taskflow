@@ -3,6 +3,7 @@ package com.taskflow.backend.service;
 import com.taskflow.backend.model.Task;
 import com.taskflow.backend.repository.TaskRepository;
 import com.taskflow.backend.repository.UserRepository;
+import com.taskflow.backend.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -16,7 +17,8 @@ class TaskServiceTests {
 
     private final TaskRepository taskRepository = mock(TaskRepository.class);
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final TaskService taskService = new TaskService(taskRepository, userRepository);
+    private final CategoryRepository categoryRepository = mock(CategoryRepository.class);
+    private final TaskService taskService = new TaskService(taskRepository, userRepository, categoryRepository);
 
     @Test
     void testGetTaskById() {

@@ -83,8 +83,14 @@ const NewTaskPage = () => {
     setError(null);
     
     try {
+      // Format the date to match backend's expected format (YYYY-MM-DD)
+      const formattedTask = {
+        ...task,
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined
+      };
+      
       // Create the task with categoryId if provided
-      await createTask(task);
+      await createTask(formattedTask);
       
       // Redirect to dashboard on success
       navigate('/dashboard');
@@ -141,18 +147,21 @@ const NewTaskPage = () => {
                   format="MM/dd/yyyy hh:mm a"
                   ampm={true}
                   value={dueDateValue}
+                  enableAccessibleFieldDOMStructure={false}
                   onChange={(date) => {
                     setDueDateValue(date as Date);
                     setTask({ ...task, dueDate: (date as Date).toISOString() });
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      size="small"
-                      className="form-input mui-datetime"
-                    />
-                  )}
+                  slots={{
+                    textField: TextField
+                  }}
+                  slotProps={{
+                    textField: {
+                      variant: "outlined",
+                      size: "small",
+                      className: "form-input mui-datetime"
+                    }
+                  }}
                 />
               </LocalizationProvider>
             </div>
