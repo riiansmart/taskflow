@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // Your Spring Boot backend
+        target: 'http://localhost:8081', // Updated Spring Boot backend port
         changeOrigin: true,
         secure: false,
       },
