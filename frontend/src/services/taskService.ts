@@ -2,50 +2,59 @@
 
 import api from './api';
 import { Task } from '../types/Task';
-import axios from "axios";
-
-const API_URL = "/api/tasks";
 
 // Fetch all tasks for the current user
 export const getTasks = async () => {
   const token = localStorage.getItem('token')
 
-  const response = await axios.get('/api/tasks', {
+  const response = await api.get('/v1/tasks', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   })
 
-  return response.data // This returns just the task array
+  console.log('Raw tasks response:', response);
+  
+  // Handle paginated response with content array
+  if (response.data && response.data.content) {
+    return response.data.content;
+  }
+  
+  // Fallback for other response formats
+  return response.data && response.data.data ? response.data.data : response.data;
 }
 
 // Get a single task by ID
-export const getTaskById = async (id: number, token: string): Promise<Task> => {
-  const response = await api.get(`/tasks/${id}`, {
+export const getTaskById = async (id: number): Promise<Task> => {
+  const token = localStorage.getItem('token')
+  const response = await api.get(`/v1/tasks/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
 
 // Create a new task
-export const createTask = async (task: Partial<Task>, token: string): Promise<Task> => {
-  const response = await api.post('/tasks', task, {
+export const createTask = async (task: Partial<Task>): Promise<Task> => {
+  const token = localStorage.getItem('token')
+  const response = await api.post('/v1/tasks', task, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
 
 // Update an existing task
-export const updateTask = async (id: number, task: Partial<Task>, token: string): Promise<Task> => {
-  const response = await api.put(`/tasks/${id}`, task, {
+export const updateTask = async (id: number, task: Partial<Task>): Promise<Task> => {
+  const token = localStorage.getItem('token')
+  const response = await api.put(`/v1/tasks/${id}`, task, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 };
 
 // Delete a task
-export const deleteTask = async (id: number, token: string): Promise<void> => {
-  await api.delete(`/tasks/${id}`, {
+export const deleteTask = async (id: number): Promise<void> => {
+  const token = localStorage.getItem('token')
+  await api.delete(`/v1/tasks/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
