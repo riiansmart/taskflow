@@ -48,6 +48,8 @@ This section provides professional wireframes of the **TaskFlow** application in
 ## 🎥 Demo Video
 [![TaskFlow Demo Video](https://img.youtube.com/vi/_RQx_9v51IM/maxresdefault.jpg)](https://www.youtube.com/watch?v=_RQx_9v51IM)
 *Click the image above to watch the demo video*
+[![TaskFlow Demo Video](https://img.youtube.com/vi/_RQx_9v51IM/maxresdefault.jpg)](https://www.youtube.com/watch?v=_RQx_9v51IM)
+*Click the image above to watch the demo video*
 
 ---
 
@@ -65,3 +67,4 @@ taskflow/
 │   └── imgs/         # Wireframe images
 └── README.md         # Project readme
 ```
+
