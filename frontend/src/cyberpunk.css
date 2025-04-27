@@ -138,12 +138,22 @@ body::before {
     gap: 1rem;
 }
 
+.user-section .nav-link {
+    display: inline-block;
+    /* reset gap for uniform sizing */
+    gap: 0;
+}
+
 .nav-link {
+    /* unify link and button styling */
+    background-color: transparent;
+    border: none;
     color: var(--text-primary);
     text-decoration: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .nav-link:hover {
@@ -225,7 +235,8 @@ body::before {
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
     position: relative;
-    overflow: hidden;
+    flex-wrap: wrap;
+    overflow: visible;
 }
 
 .toolbar::before {
@@ -255,6 +266,7 @@ body::before {
     flex-grow: 1;
     margin-right: 1rem;
     z-index: 1;
+    min-width: 0;
 }
 
 .search-input {
@@ -266,6 +278,7 @@ body::before {
     color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
     font-size: 1rem;
+    min-width: 0;
 }
 
 .search-input:focus {
@@ -287,6 +300,7 @@ body::before {
     display: flex;
     gap: 0.75rem;
     z-index: 1;
+    flex-wrap: wrap;
 }
 
 .filter-button {
@@ -325,7 +339,8 @@ body::before {
     border-radius: 8px;
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     position: relative;
 }
 
@@ -683,6 +698,7 @@ body::before {
     cursor: not-allowed;
 }
 
+/* Global floating create-task button */
 .add-task-button {
     position: fixed;
     bottom: 2rem;
@@ -706,6 +722,20 @@ body::before {
 .add-task-button:hover {
     transform: scale(1.1);
     box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.6);
+}
+
+/* Override add-task-button when inside its container: flow with content */
+.add-task-container {
+    position: relative;
+    margin-top: 2rem;
+    /* align button to bottom-right corner of wrapper */
+    text-align: right;
+}
+.add-task-container .add-task-button {
+    /* remove fixed positioning so it flows in normal document flow */
+    position: relative;
+    bottom: auto;
+    right: auto;
 }
 
 .glow-effect {
@@ -791,4 +821,152 @@ body::before {
         padding: 0.3rem 0.6rem;
         font-size: 0.7rem;
     }
+}
+
+/* Authentication Pages */
+.auth-page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.auth-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.auth-header .welcome-description {
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+
+.auth-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.auth-tab {
+  padding: 0.5rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.auth-tab:hover {
+  color: var(--accent-primary);
+}
+
+.auth-tab.active {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2);
+}
+
+.auth-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.4);
+}
+
+.error-message {
+  margin-top: 1rem;
+  color: var(--priority-high);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Styling for filter-tags under toolbar */
+.filter-tags {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.filter-tag:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.filter-tag.active {
+    background-color: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.3);
 }
