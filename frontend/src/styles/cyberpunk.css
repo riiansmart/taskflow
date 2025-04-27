@@ -177,12 +177,11 @@ body::before {
   border-left: 1px solid var(--border-color);
 }
 
-/* Authentication page container */
+/* Authentication page container: full-screen absolute center alignment */
 .auth-page {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
-  padding: 2rem;
 } 
