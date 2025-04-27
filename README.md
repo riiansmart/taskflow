@@ -68,22 +68,53 @@ npm run dev
 
 Ensure your Vite proxy is set to `http://localhost:8080` in `vite.config.ts`.
 
-### 🗄️ Database Setup with Prisma
+### 🗄️ Database & Prisma Local Setup
 
-Create a `.env` file in the project root (F:\taskflow\.env) with the following content:
+1.
+   point `DATABASE_URL` at your own running instance.
 
-```bash
-# .env
-DATABASE_URL='postgresql://postgres:postgres@localhost:5432/taskflow_db?schema=public'
-JWT_SECRET='your-secret-key-change-this-in-production'
-```
+2.
+   Edit `.env` and verify your connection:
+   ```dotenv
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taskflow_dev?schema=public"
+   JWT_SECRET="your-secret-key-change-this-in-production"
+   ```
 
-```bash
-# From the project root
-npm install
-npx prisma migrate dev --name init
-npx prisma generate
-npx prisma db seed
+1. Apply your Prisma schema → database
+   - **With migrations (recommended):**
+     ```bash
+     npm run migrate:dev  # prisma migrate dev
+     ```
+   - **Schema-first push (no history):**
+     ```bash
+     npm run db:push      # prisma db push
+     npm run generate     # prisma generate
+     ```
+
+2. (Re-)generate the Prisma client:
+   ```bash
+   npm run generate  # prisma generate
+   ```
+
+3. Open Prisma Studio (browser UI):
+   ```bash
+   npm run studio  # prisma studio
+   ```
+
+#### Handy NPM scripts
+
+You can add these under the `scripts` section in your `package.json`:
+```jsonc
+{
+  "scripts": {
+    "db:start":    "docker-compose up -d db",
+    "db:stop":     "docker-compose down",
+    "migrate:dev": "prisma migrate dev",
+    "db:push":     "prisma db push",
+    "generate":    "prisma generate",
+    "studio":      "prisma studio"
+  }
+}
 ```
 
 ---
