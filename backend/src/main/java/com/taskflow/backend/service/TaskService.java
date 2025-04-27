@@ -6,6 +6,11 @@ import com.taskflow.backend.model.Task;
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.TaskRepository;
 import com.taskflow.backend.repository.UserRepository;
+import com.taskflow.backend.repository.CategoryRepository;
+import com.taskflow.backend.model.Category;
+import com.taskflow.backend.exception.UnauthorizedException;
+import com.taskflow.backend.dto.TaskRequest;
+import com.taskflow.backend.model.Task.Priority;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -20,10 +25,12 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     // Get the currently authenticated user from security context
@@ -56,15 +63,53 @@ public class TaskService {
     }
 
     @Transactional
-    public Task createTask(Task task) {
-        // TODO: Set current user
+    public Task createTask(TaskRequest request) {
+        // Map DTO to entity
+        Task task = new Task();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        // Set due date at start of day
+        if (request.getDueDate() != null) {
+            task.setDueDate(request.getDueDate().atStartOfDay());
+        }
+        task.setPriority(Priority.valueOf(request.getPriority()));
+        task.setCompleted(request.isCompleted());
+        // Set the current authenticated user
+        String email = getAuthenticatedUser();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found with email: " + email));
+        task.setUser(user);
+        // Associate category if provided
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Category not found with id: " + request.getCategoryId()));
+            task.setCategory(category);
+        }
         return taskRepository.save(task);
     }
 
     @Transactional
-    public Task updateTask(Long id, Task task) {
+    public Task updateTask(Long id, TaskRequest request) {
         Task existingTask = getTaskById(id);
-        // TODO: Update task fields
+        // Update basic fields
+        existingTask.setTitle(request.getTitle());
+        existingTask.setDescription(request.getDescription());
+        // Convert LocalDate to LocalDateTime at start of day
+        if (request.getDueDate() != null) {
+            existingTask.setDueDate(request.getDueDate().atStartOfDay());
+        }
+        existingTask.setPriority(Priority.valueOf(request.getPriority()));
+        existingTask.setCompleted(request.isCompleted());
+        // Update category association
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Category not found with id: " + request.getCategoryId()));
+            existingTask.setCategory(category);
+        } else {
+            existingTask.setCategory(null);
+        }
         return taskRepository.save(existingTask);
     }
 

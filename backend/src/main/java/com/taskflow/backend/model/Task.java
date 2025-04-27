@@ -2,7 +2,7 @@ package com.taskflow.backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +16,8 @@ public class Task {
 
     private String title;
     private String description;
-    private LocalDate dueDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    private LocalDateTime dueDate;
 
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.MEDIUM;
@@ -58,11 +59,11 @@ public class Task {
         this.description = description;
     }
 
-    public LocalDate getDueDate() {
+    public LocalDateTime getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDate dueDate) {
+    public void setDueDate(LocalDateTime dueDate) {
         this.dueDate = dueDate;
     }
 
