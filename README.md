@@ -43,14 +43,11 @@ This section provides professional wireframes of the **TaskFlow** application in
 ![Light Mode Dashboard Page](docs/imgs/LightMode-Dashboard.png)
 ![Dark Mode Dashboard Page](docs/imgs/DarkMode-Dashboard.png)
 
-## 🎥 Demo Video
 
-<iframe width="560" height="315"
- src="https://www.youtube.com/embed/_RQx_9v51IM?rel=0&autoplay=1&loop=1&playlist=_RQx_9v51IM"
- frameborder="0"
- allow="autoplay; encrypted-media; fullscreen"
- allowfullscreen>
-</iframe>
+
+## 🎥 Demo Video
+[![TaskFlow Demo Video](https://img.youtube.com/vi/_RQx_9v51IM/maxresdefault.jpg)](https://www.youtube.com/watch?v=_RQx_9v51IM)
+*Click the image above to watch the demo video*
 
 ---
 
