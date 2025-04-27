@@ -1,11 +1,11 @@
 // src/pages/RegisterPage.tsx
 import React from 'react'
-import Navbar from '../components/Navbar'
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { registerUser } from '../services/authService';
 import { RegisterRequest } from '../types/Auth';
 import ErrorMessage from '../components/ErrorMessage';
+import Navbar from '../components/Navbar';
 
 export default function RegisterPage() {
   const navigate = useNavigate();

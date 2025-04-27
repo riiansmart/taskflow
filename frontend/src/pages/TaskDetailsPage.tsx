@@ -15,7 +15,7 @@ const TaskDetailsPage = () => {
   // Fetch task details on mount
   useEffect(() => {
     if (!token || !id) return;
-    getTaskById(Number(id), token)
+    getTaskById(Number(id))
       .then(setTask)
       .catch(() => setError('Failed to load task'));
   }, [id, token]);
