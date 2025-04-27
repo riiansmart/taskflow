@@ -32,6 +32,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .exceptionHandling(handling -> handling.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .anyRequest().authenticated())

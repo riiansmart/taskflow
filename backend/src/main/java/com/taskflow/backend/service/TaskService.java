@@ -1,12 +1,17 @@
 package com.taskflow.backend.service;
 
+import com.taskflow.backend.dto.PageRequest;
+import com.taskflow.backend.exception.ResourceNotFoundException;
 import com.taskflow.backend.model.Task;
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.TaskRepository;
 import com.taskflow.backend.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,43 +27,67 @@ public class TaskService {
     }
 
     // Get the currently authenticated user from security context
-    private User getAuthenticatedUser() {
-        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    private String getAuthenticatedUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof org.springframework.security.core.userdetails.User userDetails) {
+            return userDetails.getUsername(); // this is the email
+        }
+
+        return null;
     }
 
-    // Get all tasks for the current user
-    public List<Task> getUserTasks() {
-        User user = getAuthenticatedUser();
-        return taskRepository.findByUserId(user.getId());
+    public Page<Task> getUserTasks(com.taskflow.backend.dto.PageRequest pageRequest) {
+        Sort.Direction direction = Sort.Direction.fromString(pageRequest.getDirection().toUpperCase());
+        Sort sort = pageRequest.getSort() != null ? 
+            Sort.by(direction, pageRequest.getSort()) : 
+            Sort.by(Sort.Direction.DESC, "createdAt");
+
+        org.springframework.data.domain.PageRequest springPageRequest = 
+            org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+
+        // TODO: Implement search and filter functionality
+        return taskRepository.findAll(springPageRequest);
     }
 
-    // Get a specific task by ID
     public Task getTaskById(Long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
     }
 
-    // Create a new task and assign to the current user
+    @Transactional
     public Task createTask(Task task) {
-        task.setUser(getAuthenticatedUser());
+        // TODO: Set current user
         return taskRepository.save(task);
     }
 
-    // Update an existing task
-    public Task updateTask(Long id, Task newTask) {
-        Task existing = getTaskById(id);
-        existing.setTitle(newTask.getTitle());
-        existing.setDescription(newTask.getDescription());
-        existing.setDueDate(newTask.getDueDate());
-        existing.setPriority(newTask.getPriority());
-        existing.setCompleted(newTask.isCompleted());
-        return taskRepository.save(existing);
+    @Transactional
+    public Task updateTask(Long id, Task task) {
+        Task existingTask = getTaskById(id);
+        // TODO: Update task fields
+        return taskRepository.save(existingTask);
     }
 
-    // Delete a task by ID
+    @Transactional
     public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+        Task task = getTaskById(id);
+        taskRepository.delete(task);
+    }
+
+    @Transactional
+    public List<Task> createBulkTasks(List<Task> tasks) {
+        // TODO: Set current user for all tasks
+        return taskRepository.saveAll(tasks);
+    }
+
+    @Transactional
+    public List<Task> updateBulkTasks(List<Task> tasks) {
+        // TODO: Validate and update tasks
+        return taskRepository.saveAll(tasks);
+    }
+
+    @Transactional
+    public void deleteBulkTasks(List<Long> taskIds) {
+        taskRepository.deleteAllById(taskIds);
     }
 }
