@@ -7,6 +7,8 @@ import { Layout } from './components/Layout'
 
 function App() {
   const { user } = useAuth()
+  console.log('App rendering with user:', user);
+  
   return (
     <Routes>
       <Route

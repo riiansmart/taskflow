@@ -18,16 +18,25 @@ const AuthProvider = ({ children }: Props) => {
     const storedUser = localStorage.getItem('user');
     if (storedToken && storedUser) {
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        // Clear invalid data
+        localStorage.removeItem('user');
+        setUser(null);
+      }
     }
   }, []);
 
   // Save token and user in localStorage
   const login = (newToken: string, newUser: User) => {
+    console.log('AuthProvider login called with:', { newToken, newUser });
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    console.log('AuthProvider state updated:', { token: newToken, user: newUser });
   };
 
   // Clear session

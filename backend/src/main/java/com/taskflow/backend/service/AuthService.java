@@ -3,60 +3,65 @@ package com.taskflow.backend.service;
 import com.taskflow.backend.dto.JwtResponse;
 import com.taskflow.backend.dto.LoginRequest;
 import com.taskflow.backend.dto.RegisterRequest;
+import com.taskflow.backend.exception.UnauthorizedException;
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.UserRepository;
-import com.taskflow.backend.security.JwtUtils;
+import com.taskflow.backend.security.JwtTokenProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class AuthService {
 
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public AuthService(
+            AuthenticationManager authenticationManager,
+            JwtTokenProvider jwtTokenProvider,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtils = jwtUtils;
     }
 
-    // Authenticate user and return JWT response
     public JwtResponse login(LoginRequest request) {
-        System.out.println("=== LOGIN DEBUG START ===");
-        System.out.println("Email input: " + request.getEmail());
-        System.out.println("Password input: " + request.getPassword());
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        
+        String token = jwtTokenProvider.generateToken(authentication);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+
+        // Update last login
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> {
-                    System.out.println("User not found for email: " + request.getEmail());
-                    return new RuntimeException("Invalid email or password");
-                });
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
 
-        System.out.println("Found user: " + user.getEmail());
-        System.out.println("Encoded password in DB: " + user.getPassword());
-        boolean match = passwordEncoder.matches(request.getPassword(), user.getPassword());
-        System.out.println("Password match result: " + match);
-
-        if (!match) {
-            System.out.println("Password did not match!");
-            throw new RuntimeException("Invalid email or password");
-        }
-
-        String token = jwtUtils.generateToken(user);
-        System.out.println("JWT Token generated: " + token);
-        System.out.println("=== LOGIN DEBUG END ===");
-
-        return new JwtResponse(token, user);
+        return new JwtResponse(token, refreshToken);
     }
 
-    // Register new user with encrypted password
+    @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already in use");
+            throw new UnauthorizedException("Email is already registered");
         }
 
         User user = new User();
@@ -64,7 +69,50 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
+        user.setActive(true);
+
+        // Generate verification token
+        String verificationToken = UUID.randomUUID().toString();
+        // TODO: Store verification token and send verification email
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        // TODO: Implement email verification logic
+        throw new UnauthorizedException("Not implemented");
+    }
+
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+        // TODO: Generate new verification token and send email
+    }
+
+    public JwtResponse refreshToken(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+
+        String email = jwtTokenProvider.getEmailFromToken(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        // Create authentication object for token generation
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getEmail(), null, java.util.Collections.emptyList());
+        
+        String newToken = jwtTokenProvider.generateToken(authentication);
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+
+        return new JwtResponse(newToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        // TODO: Implement token invalidation logic
+        // This could involve storing the token in a blacklist or deleting it from a valid tokens table
     }
 }
