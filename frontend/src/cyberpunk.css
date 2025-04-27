@@ -37,11 +37,11 @@
     --bg-secondary: #f6f8fb;
     --text-primary: #101820;
     --text-secondary: #505868;
-    --accent-primary: #36ff74;
-    --accent-secondary: #6affb0;
+    --accent-primary: #2ecc71;
+    --accent-secondary: #48c78e;
     --border-color: #e0e8f0;
-    --shadow: 0 0 15px rgba(54, 255, 116, 0.2);
-    --accent-primary-rgb: 54, 255, 116;
+    --shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+    --accent-primary-rgb: 46, 204, 113;
     --text-secondary-rgb: 80, 88, 104;
     --priority-high: #ff3a4c;
     --priority-medium: #ff9e44;
@@ -969,4 +969,224 @@ body::before {
     color: var(--bg-primary);
     border-color: var(--accent-primary);
     box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.3);
+}
+
+/* Task form and edit-task page styles */
+.task-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.cyberpunk-form {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2);
+}
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.cancel-button {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.cancel-button:hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.3);
+}
+.submit-button {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.4);
+}
+.form-checkbox {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Holographic enhancements for DateTimePicker */
+.react-datetime-picker {
+  background: rgba(var(--text-secondary-rgb), 0.05) !important;
+  border: 1px solid var(--accent-primary) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.6) !important;
+  backdrop-filter: blur(6px) saturate(150%);
+}
+.react-datetime-picker:focus-within {
+  box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.8) !important;
+}
+.react-datetime-picker__inputGroup {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem;
+}
+.react-datetime-picker__inputGroup__divider {
+  color: var(--accent-secondary);
+}
+.react-datetime-picker__button {
+  background: transparent !important;
+  color: var(--accent-secondary) !important;
+}
+.react-datetime-picker__button:enabled:hover {
+  color: var(--accent-primary) !important;
+}
+
+/* Holographic Calendar */
+.react-calendar {
+  background: rgba(var(--bg-secondary), 0.7);
+  backdrop-filter: blur(6px) saturate(120%);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.5);
+}
+.react-calendar__navigation {
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.react-calendar__navigation button {
+  background: transparent;
+  color: var(--accent-primary);
+}
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  color: var(--accent-secondary);
+}
+.react-calendar__tile {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.react-calendar__tile:hover {
+  background: rgba(var(--accent-primary-rgb), 0.15);
+}
+.react-calendar__tile--active {
+  background: rgba(var(--accent-primary-rgb), 0.4) !important;
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.9);
+  color: var(--bg-primary) !important;
+}
+
+/* Holographic Clock */
+.react-clock {
+  background: rgba(var(--bg-secondary), 0.7);
+  border: 1px solid var(--accent-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.7);
+  backdrop-filter: blur(6px) saturate(130%);
+}
+.react-clock__face {
+  background: transparent;
+}
+.react-clock__hand--hour,
+.react-clock__hand--minute {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--accent-secondary);
+}
+.react-clock__hand--second {
+  background: var(--accent-primary);
+}
+.react-clock__hour__mark__body,
+.react-clock__minute__mark__body {
+  background: var(--text-secondary);
+}
+.react-clock__hour__mark--active .react-clock__hour__mark__body {
+  background: var(--accent-primary);
+}
+.react-clock__hour__number {
+  fill: var(--text-primary);
+}
+
+/* Prevent clipping of date/time overlays */
+.task-form-container,
+.cyberpunk-form,
+.form-row,
+.form-group {
+  overflow: visible !important;
+}
+
+/* Position calendar and clock overlays above other elements */
+.react-datetime-picker {
+  position: relative;
+  z-index: 1;
+}
+.react-datetime-picker__calendar,
+.react-datetime-picker__clock {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  z-index: 9999 !important;
+}
+
+/* Flicker effect for Create/Edit Task page titles */
+.page-header .page-title {
+    /* keep theme accent color and static glow */
+    color: var(--accent-primary);
+    text-shadow:
+        0 0 5px rgba(var(--accent-primary-rgb), 0.8),
+        0 0 10px rgba(var(--accent-primary-rgb), 0.6),
+        0 0 20px rgba(var(--accent-primary-rgb), 0.4);
+    /* disable animation */
+    animation: none !important;
+}
+
+/* Center the task page headers and add vertical padding */
+.page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 0;
 }

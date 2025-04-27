@@ -3,6 +3,7 @@ package com.taskflow.backend.controller;
 import com.taskflow.backend.dto.ApiResponse;
 import com.taskflow.backend.dto.PageRequest;
 import com.taskflow.backend.model.Task;
+import com.taskflow.backend.dto.TaskRequest;
 import com.taskflow.backend.service.TaskService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -48,15 +49,15 @@ public class TaskController {
 
     // Create a new task
     @PostMapping
-    public ResponseEntity<ApiResponse<Task>> createTask(@RequestBody Task task) {
-        Task createdTask = taskService.createTask(task);
+    public ResponseEntity<ApiResponse<Task>> createTask(@RequestBody TaskRequest request) {
+        Task createdTask = taskService.createTask(request);
         return ResponseEntity.ok(ApiResponse.success(createdTask, "Task created successfully"));
     }
 
     // Update an existing task
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Task>> updateTask(@PathVariable Long id, @RequestBody Task task) {
-        Task updatedTask = taskService.updateTask(id, task);
+    public ResponseEntity<ApiResponse<Task>> updateTask(@PathVariable Long id, @RequestBody TaskRequest request) {
+        Task updatedTask = taskService.updateTask(id, request);
         return ResponseEntity.ok(ApiResponse.success(updatedTask, "Task updated successfully"));
     }
 

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getTasks } from '../services/taskService'
 import { useAuth } from '../hooks/useAuth'
 import { Task, Priority } from '../types/Task'
+import { getCategories } from '../services/categoryService'
+import { Category } from '../types/Category'
 
 export default function HomePage() {
   const { token } = useAuth()
@@ -9,6 +11,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [filterPriority, setFilterPriority] = useState<Priority | 'ALL'>('ALL')
   const [loading, setLoading] = useState<boolean>(true)
+  const [categories, setCategories] = useState<Category[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -38,6 +41,18 @@ export default function HomePage() {
         setLoading(false);
       });
   }, [token])
+
+  useEffect(() => {
+    if (!token) return;
+    getCategories()
+      .then(setCategories)
+      .catch(err => console.error('Failed to load categories:', err));
+  }, [token]);
+
+  const categoryMap = useMemo(
+    () => Object.fromEntries(categories.map(c => [c.id, c] as [number, Category])),
+    [categories]
+  );
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -103,23 +118,46 @@ export default function HomePage() {
             <div className="task-list-header-item task-header-actions">Actions</div>
           </div>
           <div className="task-list-body">
-            {filteredTasks.map(task => (
-              <div key={task.id} className="task-item">
-                <div className="task-cell task-cell-checkbox"><input type="checkbox" className="task-checkbox" checked={task.completed} readOnly /></div>
-                <div className="task-cell task-cell-id"><span className="task-id">TASK-{task.id}</span></div>
-                <div className="task-cell"><div className="task-title task-title-tooltip" data-tooltip={task.description}>{task.title}</div></div>
-                <div className="task-cell task-cell-type"><span className="task-type"><i className="fas fa-tag task-type-icon" /> {task.categoryId ? 'Feature' : 'Bug'}</span></div>
-                <div className="task-cell"><span className={`status-pill status-${task.completed ? 'done' : 'todo'}`}><i className={`fas fa-${task.completed ? 'check-circle' : 'circle-notch'}${task.completed ? '' : ' fa-spin'}`} /> {task.completed ? 'Done' : 'Todo'}</span></div>
-                <div className="task-cell"><span className={`priority-indicator priority-${task.priority.toLowerCase()}`}><span className={`priority-dot dot-${task.priority.toLowerCase()}`}></span> {task.priority}</span></div>
-                <div className="task-cell task-cell-date"><span className={`task-due${new Date(task.dueDate) < new Date() ? ' overdue' : ''}`}>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'})}</span></div>
-                <div className="task-cell task-cell-actions">
-                  <div className="action-buttons">
-                    <button className="action-button edit-button"><i className="fas fa-edit" /></button>
-                    <button className="action-button delete-button"><i className="fas fa-trash" /></button>
+            {filteredTasks.map(task => {
+              // Safely lookup category for this task
+              const cat = task.categoryId != null ? categoryMap[task.categoryId] : undefined;
+              return (
+                <div key={task.id} className="task-item">
+                  <div className="task-cell task-cell-checkbox"><input type="checkbox" className="task-checkbox" checked={task.completed} readOnly /></div>
+                  <div className="task-cell task-cell-id"><span className="task-id">TASK-{task.id}</span></div>
+                  <div className="task-cell"><div className="task-title task-title-tooltip" data-tooltip={task.description}>{task.title}</div></div>
+                  <div className="task-cell task-cell-type">
+                    <span className="task-type">
+                      {cat ? (
+                        <>
+                          <i className={`fas fa-${cat.icon || 'tag'} task-type-icon`} />
+                          {cat.name}
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-tag task-type-icon" />
+                          No Category
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  <div className="task-cell">
+                    <span className={`status-pill status-${task.completed ? 'done' : 'todo'}`}>
+                      <i className={`fas fa-${task.completed ? 'check-circle' : 'circle-notch'}${task.completed ? '' : ' fa-spin'}`} />
+                      {task.completed ? 'Done' : 'Todo'}
+                    </span>
+                  </div>
+                  <div className="task-cell"><span className={`priority-indicator priority-${task.priority.toLowerCase()}`}><span className={`priority-dot dot-${task.priority.toLowerCase()}`}></span> {task.priority}</span></div>
+                  <div className="task-cell task-cell-date"><span className={`task-due${new Date(task.dueDate) < new Date() ? ' overdue' : ''}`}>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'})}</span></div>
+                  <div className="task-cell task-cell-actions">
+                    <div className="action-buttons">
+                      <button className="action-button edit-button"><i className="fas fa-edit" /></button>
+                      <button className="action-button delete-button"><i className="fas fa-trash" /></button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

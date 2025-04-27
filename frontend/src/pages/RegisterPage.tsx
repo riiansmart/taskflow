@@ -115,6 +115,10 @@ export default function RegisterPage() {
             </button>
             
             {error && <ErrorMessage message={error} />}
+            {/* Link back to landing */}
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <Link to="/" className="nav-link">Back to Home</Link>
+            </div>
           </form>
         </div>
       </div>

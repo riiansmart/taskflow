@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 import NewTaskPage from './pages/NewTaskPage';
+import EditTaskPage from './pages/EditTaskPage';
 import { Layout } from './components/Layout';
 
 function App() {
@@ -15,10 +16,8 @@ function App() {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={!user ? <LandingPage /> : <Navigate to="/dashboard" replace />}
-      />
+      {/* Public landing page always available */}
+      <Route path="/" element={<LandingPage />} />
       {/* Public routes */}
       <Route
         path="/login"
@@ -29,17 +28,20 @@ function App() {
         element={!user ? <RegisterPage /> : <Navigate to="/dashboard" replace />}
       />
       
-      {/* Protected routes */}
+      {/* Protected routes under Layout */}
       <Route
         element={user ? <Layout /> : <Navigate to="/login" replace />}
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/tasks/new" element={<NewTaskPage />} />
+        <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
         
-        {/* 404 page */}
+        {/* 404 page for protected routes */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
+      {/* Catch-all redirects to landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
