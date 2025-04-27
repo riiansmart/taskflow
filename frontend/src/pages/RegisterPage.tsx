@@ -1,13 +1,14 @@
 // Registration form + validation
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { registerUser } from '../services/authService';
 import { RegisterRequest } from '../types/Auth';
 import ErrorMessage from '../components/ErrorMessage';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState<RegisterRequest>({ name: '', email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
 
@@ -28,13 +29,49 @@ const RegisterPage = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input name="name" placeholder="Name" value={form.name} onChange={handleChange} required />
-      <input name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-      <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
-      <button type="submit">Register</button>
-      <ErrorMessage message={error} />
-    </form>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-header">
+          <div className="logo">TaskFlow</div>
+          <p className="description">Manage your tasks seamlessly. Please login or register to continue.</p>
+        </div>
+        <div className="auth-tabs">
+          <Link to="/login" className={`auth-tab${location.pathname === '/login' ? ' active' : ''}`}>Login</Link>
+          <Link to="/register" className={`auth-tab${location.pathname === '/register' ? ' active' : ''}`}>Register</Link>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <input
+            className="auth-input"
+            name="name"
+            placeholder="Name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            className="auth-input"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            className="auth-input"
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+          <button type="submit" className="auth-button">
+            Register
+          </button>
+          <ErrorMessage message={error} />
+        </form>
+      </div>
+    </div>
   );
 };
 

@@ -68,6 +68,24 @@ npm run dev
 
 Ensure your Vite proxy is set to `http://localhost:8080` in `vite.config.ts`.
 
+### 🗄️ Database Setup with Prisma
+
+Create a `.env` file in the project root (F:\taskflow\.env) with the following content:
+
+```bash
+# .env
+DATABASE_URL='postgresql://postgres:postgres@localhost:5432/taskflow_db?schema=public'
+JWT_SECRET='your-secret-key-change-this-in-production'
+```
+
+```bash
+# From the project root
+npm install
+npx prisma migrate dev --name init
+npx prisma generate
+npx prisma db seed
+```
+
 ---
 
 ## 🧪 Testing

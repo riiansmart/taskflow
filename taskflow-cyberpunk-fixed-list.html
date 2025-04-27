@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Cyberpunk Edition</title>
+    <style>
+        :root {
+            /* Dark mode variables (default) - Based on red/black cyberpunk helmet */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #141420;
+            --text-primary: #e0e0e0;
+            --text-secondary: #9b9ba7;
+            --accent-primary: #ff3a4c;
+            --accent-secondary: #ff7080;
+            --border-color: #222236;
+            --shadow: 0 0 15px rgba(255, 58, 76, 0.15);
+            
+            /* For the CSS variables that use RGB values */
+            --accent-primary-rgb: 255, 58, 76;
+            --text-secondary-rgb: 155, 155, 167;
+            
+            /* Task priority colors */
+            --priority-high: #ff3a4c;
+            --priority-medium: #ff9e44;
+            --priority-low: #36d7b7;
+            
+            /* Status colors */
+            --status-backlog: #5d4bff;
+            --status-todo: #36d7b7;
+            --status-in-progress: #ff9e44;
+            --status-done: #5d4bff;
+            --status-cancelled: #9b9ba7;
+
+            /* Table colors */
+            --table-header-bg: #141420;
+            --table-row-bg: #1a1a28;
+            --table-hover: #222236;
+            --table-border: #222236;
+            --table-header-text: #e0e0e0;
+            
+            /* Animation settings */
+            --glow-intensity: 1;
+            --scan-line-opacity: 0.1;
+        }
+
+        .light-mode {
+            /* Light mode variables - Based on neon green/white helmet */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fb;
+            --text-primary: #101820;
+            --text-secondary: #505868;
+            --accent-primary: #36ff74;
+            --accent-secondary: #6affb0;
+            --border-color: #e0e8f0;
+            --shadow: 0 0 15px rgba(54, 255, 116, 0.2);
+            
+            /* For the CSS variables that use RGB values */
+            --accent-primary-rgb: 54, 255, 116;
+            --text-secondary-rgb: 80, 88, 104;
+            
+            /* Priority colors */
+            --priority-high: #ff3a4c;
+            --priority-medium: #ff9e44;
+            --priority-low: #36d7b7;
+            
+            /* Status colors */
+            --status-backlog: #5d4bff;
+            --status-todo: #36d7b7;
+            --status-in-progress: #ff9e44;
+            --status-done: #5d4bff;
+            --status-cancelled: #9b9ba7;
+
+            /* Table colors */
+            --table-header-bg: #f6f8fb;
+            --table-row-bg: #ffffff;
+            --table-hover: #f0f7fb;
+            --table-border: #e0e8f0;
+            --table-header-text: #101820;
+            
+            /* Animation settings */
+            --glow-intensity: 0.4;
+            --scan-line-opacity: 0.03;
+        }
+
+        @font-face {
+            font-family: 'Cyberpunk';
+            src: url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;700&display=swap');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Cyberpunk-style scan lines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                rgba(255, 255, 255, var(--scan-line-opacity)) 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.7);
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), transparent);
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            width: 60px;
+            height: 30px;
+            background-color: var(--bg-secondary);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: var(--accent-primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.5);
+        }
+
+        .light-mode .theme-toggle::before {
+            left: 34px;
+        }
+
+        .theme-toggle:hover::before {
+            box-shadow: 0 0 15px var(--accent-primary);
+        }
+
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+            position: relative;
+        }
+
+        .welcome-text::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        .welcome-description {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toolbar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(var(--accent-primary-rgb), 0.03), 
+                transparent
+            );
+            z-index: 0;
+            opacity: var(--glow-intensity);
+            animation: shine 3s infinite linear;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            margin-right: 1rem;
+            z-index: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(var(--accent-primary-rgb), 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            z-index: 2;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 0.75rem;
+            z-index: 1;
+        }
+
+        .filter-button {
+            padding: 0.7rem 1rem;
+            border-radius: 6px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-button:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .filter-button.active {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        /* Task List Styles */
+        .task-list {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .task-list::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at right,
+                rgba(var(--accent-primary-rgb), 0.05),
+                transparent 70%
+            );
+            z-index: 0;
+            opacity: var(--glow-intensity);
+            pointer-events: none;
+        }
+
+        .task-list-header {
+            display: grid;
+            grid-template-columns: 40px 80px minmax(200px, 1fr) 130px 140px 100px 140px 100px;
+            background-color: var(--table-header-bg);
+            padding: 0.875rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .task-list-header-item {
+            color: var(--table-header-text);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            user-select: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0 0.5rem;
+        }
+
+        .task-list-header-item:hover {
+            color: var(--accent-primary);
+        }
+
+        .task-list-header-item.sortable::after {
+            content: '⌄';
+            margin-left: 5px;
+            font-size: 1rem;
+        }
+
+        .task-list-body {
+            position: relative;
+        }
+
+        .task-item {
+            display: grid;
+            grid-template-columns: 40px 80px minmax(200px, 1fr) 130px 140px 100px 140px 100px;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--table-border);
+            align-items: center;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+
+        .task-item:nth-child(odd) {
+            background-color: var(--table-row-bg);
+        }
+
+        .task-item:nth-child(even) {
+            background-color: var(--bg-secondary);
+        }
+
+        .task-item:hover {
+            background-color: var(--table-hover);
+        }
+
+        .task-cell {
+            padding: 0 0.5rem;
+        }
+
+        /* Checkbox */
+        .task-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .task-checkbox:checked {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .task-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--bg-primary);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--accent-primary);
+        }
+
+        /* Task ID */
+        .task-id {
+            font-family: 'Courier New', monospace;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            padding: 0.2rem 0.4rem;
+            background-color: rgba(var(--text-secondary-rgb), 0.1);
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Task Title */
+        .task-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .task-title-tooltip {
+            position: relative;
+        }
+
+        .task-title-tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            z-index: 10;
+            max-width: 400px;
+            white-space: normal;
+            font-weight: normal;
+        }
+
+        /* Task Type */
+        .task-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .task-type-icon {
+            font-size: 0.9rem;
+        }
+
+        /* Status Pills */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .status-backlog {
+            background-color: rgba(93, 75, 255, 0.1);
+            color: var(--status-backlog);
+            border: 1px solid rgba(93, 75, 255, 0.3);
+        }
+
+        .status-todo {
+            background-color: rgba(54, 215, 183, 0.1);
+            color: var(--status-todo);
+            border: 1px solid rgba(54, 215, 183, 0.3);
+        }
+
+        .status-in-progress {
+            background-color: rgba(255, 158, 68, 0.1);
+            color: var(--status-in-progress);
+            border: 1px solid rgba(255, 158, 68, 0.3);
+        }
+
+        .status-done {
+            background-color: rgba(93, 75, 255, 0.1);
+            color: var(--status-done);
+            border: 1px solid rgba(93, 75, 255, 0.3);
+        }
+
+        .status-cancelled {
+            background-color: rgba(155, 155, 167, 0.1);
+            color: var(--status-cancelled);
+            border: 1px solid rgba(155, 155, 167, 0.3);
+        }
+
+        /* Priority */
+        .priority-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .priority-high {
+            color: var(--priority-high);
+        }
+
+        .priority-medium {
+            color: var(--priority-medium);
+        }
+
+        .priority-low {
+            color: var(--priority-low);
+        }
+
+        .priority-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-high {
+            background-color: var(--priority-high);
+            box-shadow: 0 0 5px var(--priority-high);
+        }
+
+        .dot-medium {
+            background-color: var(--priority-medium);
+            box-shadow: 0 0 5px var(--priority-medium);
+        }
+
+        .dot-low {
+            background-color: var(--priority-low);
+            box-shadow: 0 0 5px var(--priority-low);
+        }
+
+        /* Due Date */
+        .task-due {
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .overdue {
+            color: var(--priority-high);
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: 0 0 5px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .edit-button:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .delete-button:hover {
+            border-color: var(--priority-high);
+            color: var(--priority-high);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .page-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .page-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .page-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .page-button:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .page-button.active {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.3);
+        }
+
+        .page-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .add-task-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(var(--accent-primary-rgb), 0.4);
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 100;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .add-task-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.6);
+        }
+
+        .glow-effect {
+            position: relative;
+        }
+
+        .glow-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            box-shadow: 0 0 15px var(--accent-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-effect:hover::after {
+            opacity: 0.7;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .task-list-header, .task-item {
+                grid-template-columns: 40px minmax(200px, 1fr) 140px 100px 100px;
+            }
+            
+            .task-header-id, .task-header-type, .task-header-date,
+            .task-cell-id, .task-cell-type, .task-cell-date {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .task-list-header, .task-item {
+                grid-template-columns: 40px minmax(150px, 1fr) 120px 80px;
+            }
+            
+            .task-header-actions,
+            .task-cell-actions {
+                display: none;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .filter-options {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .task-list-header, .task-item {
+                grid-template-columns: minmax(150px, 1fr) 120px;
+            }
+            
+            .task-header-checkbox,
+            .task-cell-checkbox {
+                display: none;
+            }
+            
+            .status-pill {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">TaskFlow</div>
+            <div class="user-section">
+                <div class="theme-toggle" id="theme-toggle"></div>
+            </div>
+        </header>
+
+        <section class="welcome-section">
+            <h1 class="welcome-text">Welcome back</h1>
+            <p class="welcome-description">Here's a list of your tasks for this month</p>
+        </section>
+
+        <div class="toolbar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Filter tasks...">
+            </div>
+            <div class="filter-options">
+                <button class="filter-button">
+                    <i class="fas fa-th-large"></i>
+                    Status
+                </button>
+                <button class="filter-button active">
+                    <i class="fas fa-list"></i>
+                    Priority
+                </button>
+                <button class="filter-button">
+                    <i class="fas fa-columns"></i>
+                    View
+                </button>
+            </div>
+        </div>
+
+        <div class="task-list">
+            <div class="task-list-header">
+                <div class="task-list-header-item task-header-checkbox">
+                    <input type="checkbox" class="task-checkbox" id="select-all">
+                </div>
+                <div class="task-list-header-item task-header-id sortable">#</div>
+                <div class="task-list-header-item sortable">Title</div>
+                <div class="task-list-header-item task-header-type sortable">Type</div>
+                <div class="task-list-header-item sortable">Status</div>
+                <div class="task-list-header-item sortable">Priority</div>
+                <div class="task-list-header-item task-header-date sortable">Due Date</div>
+                <div class="task-list-header-item task-header-actions">Actions</div>
+            </div>
+            
+            <div class="task-list-body">
+                <!-- Task 1 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox">
+                    </div>
+                    <div class="task-cell task-cell-id">
+                        <span class="task-id">TASK-7879</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="Try to calculate the EXE feed, maybe it will index the multi-byte pixel!">
+                            Try to calculate the EXE feed, maybe it will index the multi-byte pixel!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-file-alt task-type-icon"></i>
+                            Documentation
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-backlog">
+                            <i class="fas fa-pause"></i>
+                            Backlog
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-medium">
+                            <span class="priority-dot dot-medium"></span>
+                            Medium
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due">May 10, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 3 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox">
+                    </div>
+                    <div class="task-cell task-cell-id">
+                        <span class="task-id">TASK-7839</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="We need to bypass the neural TCP card!">
+                            We need to bypass the neural TCP card!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-bug task-type-icon"></i>
+                            Bug
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-todo">
+                            <i class="fas fa-circle-notch"></i>
+                            Todo
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-high">
+                            <span class="priority-dot dot-high"></span>
+                            High
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due overdue">Apr 28, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 4 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox">
+                    </div>
+                    <div class="task-cell task-cell-id">
+                        <span class="task-id">TASK-5562</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="The SAS interface is down, bypass the open-source pixel so we can back up the SSL bandwidth!">
+                            The SAS interface is down, bypass the open-source pixel so we can back up the SSL bandwidth!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-puzzle-piece task-type-icon"></i>
+                            Feature
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-backlog">
+                            <i class="fas fa-pause"></i>
+                            Backlog
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-medium">
+                            <span class="priority-dot dot-medium"></span>
+                            Medium
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due">May 15, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 5 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox" checked>
+                    </div>
+                    <div class="task-cell task-cell-id">
+                        <span class="task-id">TASK-8696</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="I'll parse the wireless SSL protocol, that should driver the API panel!">
+                            I'll parse the wireless SSL protocol, that should driver the API panel!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-puzzle-piece task-type-icon"></i>
+                            Feature
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-cancelled">
+                            <i class="fas fa-ban"></i>
+                            Cancelled
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-medium">
+                            <span class="priority-dot dot-medium"></span>
+                            Medium
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due">May 5, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 6 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox" checked>
+                    </div>
+                    <div class="task-cell task-cell-id">
+                        <span class="task-id">TASK-1280</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="Use the digital TLS panel, then you can transmit the haptic system!">
+                            Use the digital TLS panel, then you can transmit the haptic system!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-bug task-type-icon"></i>
+                            Bug
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-done">
+                            <i class="fas fa-check-circle"></i>
+                            Done
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-high">
+                            <span class="priority-dot dot-high"></span>
+                            High
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due">Apr 20, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 7 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox" checked>
+                    </div>
+                    <div class="task-cell task-cell-id">
+                        <span class="task-id">TASK-7262</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="The UTF8 application is down, parse the neural bandwidth so we can back up the SSL capacitor!">
+                            The UTF8 application is down, parse the neural bandwidth so we can back up the SSL capacitor!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-puzzle-piece task-type-icon"></i>
+                            Feature
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-done">
+                            <i class="fas fa-check-circle"></i>
+                            Done
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-high">
+                            <span class="priority-dot dot-high"></span>
+                            High
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due">Apr 18, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination">
+            <div class="page-info">
+                Showing 1-7 of 42 tasks
+            </div>
+            <div class="page-controls">
+                <button class="page-button disabled">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="page-button active">1</button>
+                <button class="page-button">2</button>
+                <button class="page-button">3</button>
+                <button class="page-button">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <button class="add-task-button glow-effect">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Check if user has a saved preference
+        const savedTheme = localStorage.getItem('taskflow-cyberpunk-theme');
+        
+        // Apply saved theme or default to dark
+        if (savedTheme === 'light') {
+            body.classList.add('light-mode');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            
+            // Save preference to localStorage
+            const isLightMode = body.classList.contains('light-mode');
+            localStorage.setItem('taskflow-cyberpunk-theme', isLightMode ? 'light' : 'dark');
+        });
+        
+        // Select all checkbox functionality
+        const selectAllCheckbox = document.getElementById('select-all');
+        const taskCheckboxes = document.querySelectorAll('.task-list-body .task-checkbox');
+        
+        selectAllCheckbox.addEventListener('change', () => {
+            taskCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        });
+        
+        // Filter buttons functionality
+        const filterButtons = document.querySelectorAll('.filter-button');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+            });
+        });
+        
+        // Task list header sort functionality
+        const sortableHeaders = document.querySelectorAll('.task-list-header-item.sortable');
+        sortableHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                // Add sort indicator logic here
+                console.log(`Sorting by ${header.textContent.trim()}`);
+            });
+        });
+        
+        // Pagination buttons
+        const pageButtons = document.querySelectorAll('.page-button:not(.disabled)');
+        pageButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (!button.classList.contains('active')) {
+                    document.querySelector('.page-button.active').classList.remove('active');
+                    button.classList.add('active');
+                }
+            });
+        });
+        
+        // Task search/filter functionality
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const taskItems = document.querySelectorAll('.task-item');
+            
+            taskItems.forEach(item => {
+                const title = item.querySelector('.task-title').textContent.toLowerCase();
+                const type = item.querySelector('.task-type').textContent.toLowerCase();
+                const status = item.querySelector('.status-pill').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || type.includes(searchTerm) || status.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>d">
+                        <span class="task-id">TASK-8732</span>
+                    </div>
+                    <div class="task-cell">
+                        <div class="task-title task-title-tooltip" data-tooltip="You can't compress the program without quantifying the open-source SSD protocol!">
+                            You can't compress the program without quantifying the open-source SSD protocol!
+                        </div>
+                    </div>
+                    <div class="task-cell task-cell-type">
+                        <span class="task-type">
+                            <i class="fas fa-file-alt task-type-icon"></i>
+                            Documentation
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="status-pill status-in-progress">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            In Progress
+                        </span>
+                    </div>
+                    <div class="task-cell">
+                        <span class="priority-indicator priority-medium">
+                            <span class="priority-dot dot-medium"></span>
+                            Medium
+                        </span>
+                    </div>
+                    <div class="task-cell task-cell-date">
+                        <span class="task-due">Apr 30, 2025</span>
+                    </div>
+                    <div class="task-cell task-cell-actions">
+                        <div class="action-buttons">
+                            <button class="action-button edit-button">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-button delete-button">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 2 -->
+                <div class="task-item">
+                    <div class="task-cell task-cell-checkbox">
+                        <input type="checkbox" class="task-checkbox">
+                    </div>
+                    <div class="task-cell task-cell-i

@@ -1,0 +1,113 @@
+/* Cyberpunk Theme CSS */
+/* Extracted from taskflow-cyberpunk-fixed-list.html's <style> block */
+
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Dark mode variables (default) */
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #141420;
+    --text-primary: #e0e0e0;
+    --text-secondary: #9b9ba7;
+    --accent-primary: #ff3a4c;
+    --accent-secondary: #ff7080;
+    --border-color: #222236;
+    --shadow: 0 0 15px rgba(255, 58, 76, 0.15);
+    --accent-primary-rgb: 255, 58, 76;
+    --text-secondary-rgb: 155, 155, 167;
+    --priority-high: #ff3a4c;
+    --priority-medium: #ff9e44;
+    --priority-low: #36d7b7;
+    --status-backlog: #5d4bff;
+    --status-todo: #36d7b7;
+    --status-in-progress: #ff9e44;
+    --status-done: #5d4bff;
+    --status-cancelled: #9b9ba7;
+    --table-header-bg: #141420;
+    --table-row-bg: #1a1a28;
+    --table-hover: #222236;
+    --table-border: #222236;
+    --table-header-text: #e0e0e0;
+    --glow-intensity: 1;
+    --scan-line-opacity: 0.1;
+}
+
+.light-mode {
+    /* Light mode overrides */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f6f8fb;
+    --text-primary: #101820;
+    --text-secondary: #505868;
+    --accent-primary: #36ff74;
+    --accent-secondary: #6affb0;
+    --border-color: #e0e8f0;
+    --shadow: 0 0 15px rgba(54, 255, 116, 0.2);
+    --accent-primary-rgb: 54, 255, 116;
+    --text-secondary-rgb: 80, 88, 104;
+    --priority-high: #ff3a4c;
+    --priority-medium: #ff9e44;
+    --priority-low: #36d7b7;
+    --status-backlog: #5d4bff;
+    --status-todo: #36d7b7;
+    --status-in-progress: #ff9e44;
+    --status-done: #5d4bff;
+    --status-cancelled: #9b9ba7;
+    --table-header-bg: #f6f8fb;
+    --table-row-bg: #ffffff;
+    --table-hover: #f0f7fb;
+    --table-border: #e0e8f0;
+    --table-header-text: #101820;
+    --glow-intensity: 0.4;
+    --scan-line-opacity: 0.03;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        rgba(255, 255, 255, var(--scan-line-opacity)) 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; position: relative; }
+.logo { font-size: 2.5rem; font-weight: 700; position: relative; text-transform: uppercase; letter-spacing: 2px; background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.7); }
+.logo::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, var(--accent-primary), transparent); }
+.user-section { display: flex; align-items: center; gap: 1rem; }
+.theme-toggle { width: 60px; height: 30px; background-color: var(--bg-secondary); border-radius: 15px; position: relative; cursor: pointer; box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); }
+.theme-toggle::before { content: ''; position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: var(--accent-primary); transition: all 0.3s ease; box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.5); }
+.light-mode .theme-toggle::before { left: 34px; }
+.theme-toggle:hover::before { box-shadow: 0 0 15px var(--accent-primary); }
+
+.welcome-section { margin-bottom: 2rem; }
+.welcome-text { font-size: 1.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: inline-block; position: relative; }
+.welcome-text::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 60px; height: 3px; background: var(--accent-primary); box-shadow: 0 0 10px var(--accent-primary); }
+.welcome-description { color: var(--text-secondary); font-size: 1.1rem; }
+
+/* ... Additional toolbar, task list, pagination, responsive media queries, etc. ... */ 
