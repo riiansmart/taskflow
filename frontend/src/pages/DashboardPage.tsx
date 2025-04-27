@@ -24,13 +24,23 @@ const DashboardPage = () => {
     
     setLoading(true);
     getTasks()
-      .then(taskData => {
-        setTasks(taskData);
+      .then(response => {
+        console.log('Dashboard tasks response:', response);
+        // Check if response is an array or has a content property
+        if (Array.isArray(response)) {
+          setTasks(response);
+        } else if (response && response.content) {
+          setTasks(response.content);
+        } else {
+          console.error('Unexpected tasks response format:', response);
+          setTasks([]);
+        }
         setLoading(false);
       })
       .catch(err => {
         console.error('Failed to fetch tasks:', err);
         setError('Failed to load tasks. Please try again.');
+        setTasks([]);
         setLoading(false);
       });
   }, [token]);
