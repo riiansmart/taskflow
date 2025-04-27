@@ -1,19 +1,22 @@
 package com.taskflow.backend.service;
 
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.MockedStatic;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.UserRepository;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
-import java.util.Optional;
 
 class UserServiceTests {
 
@@ -33,23 +36,6 @@ class UserServiceTests {
         MockedStatic<SecurityContextHolder> securityContextHolderMock = mockStatic(SecurityContextHolder.class);
         securityContextHolderMock.when(SecurityContextHolder::getContext).thenReturn(context);
     }
-
-<<<<<<< HEAD
-=======
-    @BeforeEach
-    void setupSecurityContext() {
-        SecurityContext context = mock(SecurityContext.class);
-        Authentication auth = mock(Authentication.class);
-
-        when(auth.getPrincipal()).thenReturn("test@example.com");
-        when(context.getAuthentication()).thenReturn(auth);
-
-        // Mock the static SecurityContextHolder.getContext()
-        MockedStatic<SecurityContextHolder> securityContextHolderMock = mockStatic(SecurityContextHolder.class);
-        securityContextHolderMock.when(SecurityContextHolder::getContext).thenReturn(context);
-    }
-
->>>>>>> O-Dev
     @Test
     void testUpdateUserProfile() {
         User currentUser = new User();
