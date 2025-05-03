@@ -2,11 +2,14 @@ package com.taskflow.backend.controller;
 
 import com.taskflow.backend.dto.ApiResponse;
 import com.taskflow.backend.dto.PageRequest;
+import com.taskflow.backend.dto.UserSummaryDTO;
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -79,5 +82,11 @@ public class UserController {
             @RequestParam String newPassword) {
         userService.resetPassword(token, newPassword);
         return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
+    }
+
+    @GetMapping("/assignable")
+    public ResponseEntity<ApiResponse<List<UserSummaryDTO>>> getAssignableUsers() {
+        List<UserSummaryDTO> users = userService.getAssignableUsers();
+        return ResponseEntity.ok(ApiResponse.success(users));
     }
 }
