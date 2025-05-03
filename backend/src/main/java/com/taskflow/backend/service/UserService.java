@@ -13,7 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.taskflow.backend.dto.UserSummaryDTO;
 
 @Service
 public class UserService {
@@ -112,5 +116,11 @@ public class UserService {
     public void resetPassword(String token, String newPassword) {
         // TODO: Validate token and reset password
         throw new UnauthorizedException("Not implemented");
+    }
+
+    public List<UserSummaryDTO> getAssignableUsers() {
+        return userRepository.findByIsActiveTrue().stream()
+            .map(user -> new UserSummaryDTO(user.getId(), user.getName()))
+            .collect(Collectors.toList());
     }
 }
