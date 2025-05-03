@@ -4,11 +4,13 @@ import { getTasks, deleteTask } from '../services/taskService';
 import { useAuth } from '../hooks/useAuth';
 import { Task } from '../types/Task';
 import { formatDate, isOverdue } from '../utils/dateUtils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getUserInfo } from '../services/authService';
 
 const DashboardPage = () => {
-  const { token,  } = useAuth();
+  const { token, login, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +19,23 @@ const DashboardPage = () => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'>('ALL');
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Check for token in URL (from OAuth redirect)
+    const token = searchParams.get('token');
+    if (token && !user) {
+      // First store the token
+      getUserInfo(token)
+        .then(userInfo => {
+          console.log('User info received:', userInfo);
+          login(token, userInfo);
+        })
+        .catch(error => {
+          console.error('Failed to get user info:', error);
+          navigate('/login', { replace: true });
+        });
+    }
+  }, [searchParams, login, navigate, user]);
 
   // Load tasks on component mount
   useEffect(() => {
@@ -99,6 +118,10 @@ const DashboardPage = () => {
     
     return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

@@ -1,37 +1,65 @@
 // Top nav bar, links, logout
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import Diamond3D from './Diamond3D';
-import './Navbar.css';
+import './Navbar.css'; // Re-added CSS import
 import { useAuth } from '../hooks/useAuth';
 
 export function Navbar() {
-  const { toggleTheme } = useTheme();
-  const { user } = useAuth();
+  const { toggleTheme } = useTheme(); // Reverted useTheme usage
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const hideAuthLinks = location.pathname === '/login' || location.pathname === '/register';
+  const navigate = useNavigate();
+  const isOnAuthPage = location.pathname === '/login' || location.pathname === '/register'; // Renamed for clarity: Are we on an authentication page?
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
+    // Reverted to original structure and class names
     <header className="header container">
       <div className="logo-wrapper">
         <Link to="/">
+          {/* Removed width/height props from Diamond3D */}
           <Diamond3D />
         </Link>
         <div className="logo">TaskFlow</div>
       </div>
       <div className="user-section">
+        {/* Always show Home link */}
+        <Link to="/" className="nav-link">Home</Link>
+        
         {user ? (
-          <Link to="/dashboard" className="nav-link">Dashboard</Link>
-        ) : !hideAuthLinks && (
+          // If user is logged in
           <>
-            <Link to="/login" className="nav-link">Login</Link>
-            <Link to="/register" className="nav-link">Register</Link>
+            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+            <button onClick={handleLogout} className="nav-link logout-button">Logout</button>
           </>
+        ) : (
+          // If user is not logged in
+          // Show Login/Register only if NOT on an auth page
+          !isOnAuthPage && (
+            <>
+              <Link to="/login" className="nav-link">Login</Link>
+              <Link to="/register" className="nav-link">Register</Link>
+            </>
+          )
         )}
-        <div className="theme-toggle" id="theme-toggle" onClick={toggleTheme}></div>
+        
+        {/* Theme toggle */}
+        <button
+          type="button"
+          aria-label="Toggle theme"
+          className="theme-toggle"
+          onClick={toggleTheme}
+        />
       </div>
     </header>
   );
 }
 
+// Re-added default export (optional, but was there originally)
 export default Navbar;

@@ -1,136 +1,149 @@
 // src/pages/LoginPage.tsx
-import React from 'react';
-import Navbar from '../components/Navbar';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Navbar } from '../components/Navbar';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { loginUser } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
-import { LoginRequest } from '../types/Auth';
 import ErrorMessage from '../components/ErrorMessage';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const [form, setForm] = useState<LoginRequest>({ email: '', password: '' });
+  const [form, setForm] = useState<{ email: string; password: string }>({ email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Update form state on input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Attempt to log in and update auth context
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Attempting login with:', form);
-      const response = await loginUser(form); // API call
-      console.log('Login response:', response);
+      const response = await loginUser(form);
       
-      // Check if response has the expected structure
       if (response.data && response.data.token) {
-        // Create a basic user object if user is null
         const user = response.data.user || {
           id: 0,
-          name: form.email.split('@')[0], // Use email username as name
+          name: form.email.split('@')[0],
           email: form.email,
           role: 'USER'
         };
         
-        login(response.data.token, user);   // Store session
-        console.log('Auth context updated, navigating to dashboard');
-        navigate('/dashboard');                 // Redirect on success
+        login(response.data.token, user);
+        navigate('/dashboard');
       } else {
-        console.error('Unexpected response format:', response);
-        setError('Server returned an unexpected response format');
+        setError(response.data?.message || 'Server returned an unexpected response format');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Invalid credentials');
+      let errorMessage = 'Invalid credentials or server error.';
+      if (typeof err === 'object' && err !== null && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string } } };
+        errorMessage = axiosError.response?.data?.message || errorMessage;
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const isCurrentPath = (path: string) => location.pathname === path || (path === '/login' && location.pathname === '/');
+
   return (
-    <>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-      <div className="auth-page">
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
         <div className="auth-card">
           <div className="auth-header">
-            <div className="logo">TaskFlow</div>
-            <p className="welcome-description">Manage your tasks seamlessly. Please login or register to continue.</p>
+            <h1 className="logo">TaskFlow</h1>
+            <p className="description">Manage your tasks seamlessly. Please login or register to continue.</p>
           </div>
-          
+            
           <div className="auth-tabs">
             <Link 
               to="/login" 
-              className={`auth-tab${location.pathname === '/login' || location.pathname === '/' ? ' active' : ''}`}
+              className={`auth-tab ${isCurrentPath('/login') ? 'active' : ''}`}
             >
               Login
             </Link>
             <Link 
               to="/register" 
-              className={`auth-tab${location.pathname === '/register' ? ' active' : ''}`}
+              className={`auth-tab ${isCurrentPath('/register') ? 'active' : ''}`}
             >
               Register
             </Link>
           </div>
-          
+            
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <i className="fas fa-envelope input-icon"></i>
+              <span className="input-icon"><i className="fas fa-envelope"></i></span>
               <input
-                className="auth-input"
-                name="email"
                 type="email"
-                placeholder="e.g. john.doe@example.com"
+                name="email"
                 value={form.email}
                 onChange={handleChange}
+                placeholder="Email (e.g., user@example.com)"
+                className="auth-input"
                 required
+                aria-label="Email Address"
+              />
+            </div>
+            <div className="form-group">
+               <span className="input-icon"><i className="fas fa-lock"></i></span>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Password (e.g., Pa$$w0rd)"
+                className="auth-input"
+                required
+                aria-label="Password"
               />
             </div>
             
-            <div className="form-group">
-              <i className="fas fa-lock input-icon"></i>
-              <input
-                className="auth-input"
-                name="password"
-                type="password"
-                placeholder="Your password (min 6 chars)"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            {error && <ErrorMessage message={error} />}
             
             <button 
               type="submit" 
-              className="auth-button glow-effect" 
+              className="auth-button"
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <i className="fas fa-spinner fa-spin"></i> Processing...
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  Logging in...
                 </>
               ) : (
                 'Login'
               )}
             </button>
-            
-            {error && <ErrorMessage message={error} />}
-            {/* Link back to landing */}
-            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-              <Link to="/" className="nav-link">Back to Home</Link>
-            </div>
           </form>
+
+          <div className="or-container">
+             <span className="or-text">OR</span>
+          </div>
+
+          <div className="oauth-buttons">
+            <button 
+              onClick={() => { window.location.href = 'http://localhost:8081/oauth2/authorization/github' }}
+              className="github-button"
+              aria-label="Continue with GitHub"
+            >
+              <i className="fab fa-github"></i>
+              Continue with GitHub
+            </button>
+          </div>
+            
+          <div className="back-home-container">
+            <Link to="/" className="back-home-link">Back to Home</Link>
+          </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

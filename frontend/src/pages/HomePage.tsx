@@ -1,9 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { getTasks } from '../services/taskService'
 import { useAuth } from '../hooks/useAuth'
-import { Task, Priority } from '../types/Task'
-import { getCategories } from '../services/categoryService'
-import { Category } from '../types/Category'
+import { Task } from '../types/task.types'
+// import { Category } from '../types/category.types' // Removed - Definition not found
+// import { getCategories } from '../services/categoryService' // Removed unused import
+
+// Define Priority type locally based on Task interface
+type Priority = 'low' | 'medium' | 'high';
 
 export default function HomePage() {
   const { token } = useAuth()
@@ -11,7 +14,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [filterPriority, setFilterPriority] = useState<Priority | 'ALL'>('ALL')
   const [loading, setLoading] = useState<boolean>(true)
-  const [categories, setCategories] = useState<Category[]>([])
+  // const [categories, setCategories] = useState<Category[]>([]) // Commented out
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -22,26 +25,24 @@ export default function HomePage() {
     
     getTasks()
       .then(response => {
-        console.log('Tasks response:', response);
         // Check if response is an array or has a content property
         if (Array.isArray(response)) {
           setTasks(response);
         } else if (response && response.content) {
           setTasks(response.content);
         } else {
-          console.error('Unexpected tasks response format:', response);
           setTasks([]);
         }
         setLoading(false);
       })
-      .catch(err => {
-        console.error('Error fetching tasks:', err);
+      .catch(() => { // Remove unused err parameter
         setError('Failed to load tasks. Please try again later.');
         setTasks([]);
         setLoading(false);
       });
   }, [token])
 
+  /* // Commented out category fetching until type is found
   useEffect(() => {
     if (!token) return;
     getCategories()
@@ -53,6 +54,7 @@ export default function HomePage() {
     () => Object.fromEntries(categories.map(c => [c.id, c] as [number, Category])),
     [categories]
   );
+  */
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -61,19 +63,21 @@ export default function HomePage() {
   })
 
   return (
-    <div>
-      <section className="welcome-section">
+    // Apply cyberpunk theme classes to ensure consistency
+    <div className="container mx-auto px-4 py-8">
+      <section className="welcome-section mb-8"> {/* Use cyberpunk class? Add margin */}
         <h1 className="welcome-text">Welcome back</h1>
         <p className="welcome-description">Here's a list of your tasks for this month</p>
       </section>
 
       {error && (
-        <div className="error-message">
+        <div className="error-message mb-4"> {/* Add margin */}
           {error}
         </div>
       )}
 
-      <div className="toolbar">
+      {/* Ensure toolbar uses cyberpunk classes */}
+      <div className="toolbar mb-6"> {/* Add margin */} 
         <div className="search-container">
           <i className="fas fa-search search-icon" />
           <input
@@ -87,31 +91,32 @@ export default function HomePage() {
           {(['ALL', 'LOW', 'MEDIUM', 'HIGH'] as const).map(p => (
             <button
               key={p}
-              className={`filter-button${filterPriority === p ? ' active' : ''}`}
-              onClick={() => setFilterPriority(p)}
+              className={`filter-button${filterPriority === p ? ' active' : ''}`} // Keep ALL uppercase for comparison here
+              onClick={() => setFilterPriority(p === 'ALL' ? 'ALL' : p.toLowerCase() as Priority)} // Set lowercase state
             >
-              {p === 'ALL' ? 'Priority' : p}
+              {p}
             </button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <div className="loading-message">
-          <i className="fas fa-spinner fa-spin"></i> Loading tasks...
+        <div className="loading-message text-center py-10"> {/* Add styles */}
+          <i className="fas fa-spinner fa-spin text-2xl mr-2"></i> Loading tasks...
         </div>
       ) : filteredTasks.length === 0 ? (
-        <div className="empty-message">
-          <i className="fas fa-tasks"></i>
+        <div className="empty-message text-center py-10"> {/* Add styles */}
+          <i className="fas fa-tasks text-4xl mb-3 block"></i>
           <p>No tasks found. Create a new task to get started!</p>
         </div>
       ) : (
+        // Ensure task list uses cyberpunk classes
         <div className="task-list">
           <div className="task-list-header">
             <div className="task-list-header-item task-header-checkbox"><input type="checkbox" disabled /></div>
             <div className="task-list-header-item task-header-id sortable">#</div>
             <div className="task-list-header-item sortable">Title</div>
-            <div className="task-list-header-item task-header-type sortable">Type</div>
+            <div className="task-list-header-item task-header-type sortable">Type</div> {/* Keep Type column for now */} 
             <div className="task-list-header-item sortable">Status</div>
             <div className="task-list-header-item sortable">Priority</div>
             <div className="task-list-header-item task-header-date sortable">Due Date</div>
@@ -119,38 +124,35 @@ export default function HomePage() {
           </div>
           <div className="task-list-body">
             {filteredTasks.map(task => {
-              // Safely lookup category for this task
-              const cat = task.categoryId != null ? categoryMap[task.categoryId] : undefined;
+              // const cat = task.categoryId != null ? categoryMap[task.categoryId] : undefined; // Commented out
               return (
                 <div key={task.id} className="task-item">
-                  <div className="task-cell task-cell-checkbox"><input type="checkbox" className="task-checkbox" checked={task.completed} readOnly /></div>
+                  {/* Use task.status instead of task.completed */}
+                  <div className="task-cell task-cell-checkbox"><input type="checkbox" className="task-checkbox" checked={task.status === 'done'} readOnly /></div> 
                   <div className="task-cell task-cell-id"><span className="task-id">TASK-{task.id}</span></div>
                   <div className="task-cell"><div className="task-title task-title-tooltip" data-tooltip={task.description}>{task.title}</div></div>
+                  {/* Type column: Use task.type from interface */}
                   <div className="task-cell task-cell-type">
                     <span className="task-type">
-                      {cat ? (
-                        <>
-                          <i className={`fas fa-${cat.icon || 'tag'} task-type-icon`} />
-                          {cat.name}
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-tag task-type-icon" />
-                          No Category
-                        </>
-                      )}
+                       {/* Example icon logic, adjust as needed */} 
+                      <i className={`fas fa-${task.type === 'bug' ? 'bug' : task.type === 'feature' ? 'star' : 'wrench'} task-type-icon`} /> 
+                      {task.type} 
                     </span>
                   </div>
+                   {/* Status column: Use task.status */}
                   <div className="task-cell">
-                    <span className={`status-pill status-${task.completed ? 'done' : 'todo'}`}>
-                      <i className={`fas fa-${task.completed ? 'check-circle' : 'circle-notch'}${task.completed ? '' : ' fa-spin'}`} />
-                      {task.completed ? 'Done' : 'Todo'}
+                    {/* Use task.status for class and text */} 
+                    <span className={`status-pill status-${task.status.toLowerCase().replace('-', '')}`}> 
+                      {/* Example icon logic, adjust as needed */} 
+                      <i className={`fas fa-${task.status === 'done' ? 'check-circle' : task.status === 'in-progress' ? 'sync-alt fa-spin' : task.status === 'review' ? 'search' : 'circle-notch'}`} /> 
+                      {task.status} 
                     </span>
                   </div>
                   <div className="task-cell"><span className={`priority-indicator priority-${task.priority.toLowerCase()}`}><span className={`priority-dot dot-${task.priority.toLowerCase()}`}></span> {task.priority}</span></div>
                   <div className="task-cell task-cell-date"><span className={`task-due${new Date(task.dueDate) < new Date() ? ' overdue' : ''}`}>{new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'})}</span></div>
                   <div className="task-cell task-cell-actions">
                     <div className="action-buttons">
+                       {/* Add navigation/functionality later */}
                       <button className="action-button edit-button"><i className="fas fa-edit" /></button>
                       <button className="action-button delete-button"><i className="fas fa-trash" /></button>
                     </div>

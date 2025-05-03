@@ -1,11 +1,10 @@
 // src/pages/RegisterPage.tsx
-import React from 'react'
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Navbar } from '../components/Navbar';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { registerUser } from '../services/authService';
 import { RegisterRequest } from '../types/Auth';
 import ErrorMessage from '../components/ErrorMessage';
-import Navbar from '../components/Navbar';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -14,114 +13,123 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Update form state on change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Submit new user registration
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     
     try {
-      await registerUser(form); // Register user via API
-      navigate('/login?registered=true'); // Redirect to login with success param
-    } catch {
-      setError('Registration failed. Please try again.');
+      await registerUser(form);
+      navigate('/login?registered=true');
+    } catch (err) {
+      let errorMessage = 'Registration failed. Please try again.';
+       if (typeof err === 'object' && err !== null && 'response' in err) {
+         const axiosError = err as { response?: { data?: { message?: string } } };
+         errorMessage = axiosError.response?.data?.message || errorMessage;
+       }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const isCurrentPath = (path: string) => location.pathname === path;
+
   return (
-    <>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-      <div className="auth-page">
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
         <div className="auth-card">
           <div className="auth-header">
-            <div className="logo">TaskFlow</div>
-            <p className="welcome-description">Manage your tasks seamlessly. Please create an account to continue.</p>
+            <h1 className="logo">TaskFlow</h1>
+            <p className="description">Create an account to manage your tasks.</p>
           </div>
-          
+            
           <div className="auth-tabs">
             <Link 
               to="/login" 
-              className={`auth-tab${location.pathname === '/login' ? ' active' : ''}`}
+              className={`auth-tab ${isCurrentPath('/login') ? 'active' : ''}`}
             >
               Login
             </Link>
             <Link 
               to="/register" 
-              className={`auth-tab${location.pathname === '/register' ? ' active' : ''}`}
+              className={`auth-tab ${isCurrentPath('/register') ? 'active' : ''}`}
             >
               Register
             </Link>
           </div>
-          
+            
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <i className="fas fa-user input-icon"></i>
+               <span className="input-icon"><i className="fas fa-user"></i></span>
               <input
                 className="auth-input"
                 name="name"
-                placeholder="e.g. John Doe"
+                placeholder="Full Name (e.g., John Doe)"
                 value={form.name}
                 onChange={handleChange}
                 required
+                aria-label="Full Name"
               />
             </div>
-            
+              
             <div className="form-group">
-              <i className="fas fa-envelope input-icon"></i>
+              <span className="input-icon"><i className="fas fa-envelope"></i></span>
               <input
                 className="auth-input"
                 name="email"
                 type="email"
-                placeholder="e.g. john.doe@example.com"
+                placeholder="Email (e.g., john.doe@example.com)"
                 value={form.email}
                 onChange={handleChange}
                 required
+                aria-label="Email Address"
               />
             </div>
-            
+              
             <div className="form-group">
-              <i className="fas fa-lock input-icon"></i>
+              <span className="input-icon"><i className="fas fa-lock"></i></span>
               <input
                 className="auth-input"
                 name="password"
                 type="password"
-                placeholder="Your password (min 6 chars)"
+                placeholder="Password (min 6 characters)"
                 value={form.password}
                 onChange={handleChange}
                 required
                 minLength={6}
+                aria-label="Password"
               />
             </div>
-            
+              
+            {error && <ErrorMessage message={error} />}
+              
             <button 
               type="submit" 
-              className="auth-button glow-effect" 
+              className="auth-button"
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <i className="fas fa-spinner fa-spin"></i> Processing...
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  Processing...
                 </>
               ) : (
                 'Register'
               )}
             </button>
-            
-            {error && <ErrorMessage message={error} />}
-            {/* Link back to landing */}
-            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-              <Link to="/" className="nav-link">Back to Home</Link>
+              
+            <div className="back-home-container">
+              <Link to="/" className="back-home-link">Back to Home</Link>
             </div>
           </form>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
