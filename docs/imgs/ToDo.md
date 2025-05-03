@@ -1,28 +1,116 @@
+You're absolutely right. Let me add markdown styles while preserving ALL the original instructions and details:
 
-Okay, let's consolidate those backend tasks into a more comprehensive guide, focusing on the flow and rationale.
+# Backend Implementation Tasks
 
-**1. Establishing the Assignable Users Endpoint**
+## 1. Establishing the Assignable Users Endpoint
 
 To allow the frontend to populate the assignee dropdown menu, we need a dedicated backend endpoint that provides a simplified list of users. This involves several coordinated steps:
 
-First, define a Data Transfer Object (DTO) named `UserSummaryDTO` in `backend/src/main/java/com/taskflow/backend/dto/`. This DTO will be a lightweight representation of a user, containing only the essential fields required by the frontend dropdown, typically the user's `id` (as `Long`) and `name` (as `String`). Using a Java Record for this DTO is often the most concise approach.
+### 1.1 Define a Data Transfer Object (DTO)
+- [ ] Create `UserSummaryDTO` in `backend/src/main/java/com/taskflow/backend/dto/`
+- [ ] Include essential fields: `id` (as `Long`) and `name` (as `String`)
+- [ ] **Implementation Note**: Using a Java Record for this DTO is often the most concise approach
 
-Next, within the `UserService` (`backend/src/main/java/com/taskflow/backend/service/`), implement a new public method, such as `getAssignableUsers()`, which returns a `List<UserSummaryDTO>`. This method will interact with the `UserRepository`. You can either define a specific query in the `UserRepository` (e.g., using `@Query("SELECT new com.taskflow.backend.dto.UserSummaryDTO(u.id, u.name) FROM User u ...")`) to fetch only the required fields directly from the database for efficiency, or fetch the full `User` entities and then map them to `UserSummaryDTO` objects within the service method using Java Streams.
+### 1.2 Implement Service Layer Method  
+- [ ] Add `getAssignableUsers()` method to `UserService` (`backend/src/main/java/com/taskflow/backend/service/`)
+- [ ] Return type: `List<UserSummaryDTO>`
+- [ ] **Implementation Options**:
+  - [ ] **Option A**: Define a specific query in the `UserRepository` (e.g., using `@Query("SELECT new com.taskflow.backend.dto.UserSummaryDTO(u.id, u.name) FROM User u ...")`) to fetch only the required fields directly from the database for efficiency
+  - [ ] **Option B**: Fetch the full `User` entities and then map them to `UserSummaryDTO` objects within the service method using Java Streams
 
-Finally, expose this service method via the `UserController` (`backend/src/main/java/com/taskflow/backend/controller/`). Add a new method annotated with `@GetMapping("/assignable")`. This controller method will call `userService.getAssignableUsers()` and wrap the resulting list in a standard `ApiResponse` before returning it as a `ResponseEntity<ApiResponse<List<UserSummaryDTO>>>`. This creates the `GET /api/v1/users/assignable` endpoint for the frontend to consume.
+### 1.3 Create Controller Endpoint
+- [ ] Add new method to `UserController` (`backend/src/main/java/com/taskflow/backend/controller/`)
+- [ ] Annotation: `@GetMapping("/assignable")`
+- [ ] Method should call `userService.getAssignableUsers()`
+- [ ] Wrap result in standard `ApiResponse` before returning
+- [ ] Return as `ResponseEntity<ApiResponse<List<UserSummaryDTO>>>`
+- [ ] **Result**: Creates the `GET /api/v1/users/assignable` endpoint for the frontend to consume
 
-**2. Synchronizing Task Data Representation**
+## 2. Synchronizing Task Data Representation
 
 A critical step is ensuring the backend's representation of a 'Task' aligns precisely with the frontend's expectations defined in `frontend/src/types/task.types.ts`. This requires examining and potentially modifying the `Task` entity, the `TaskRequest` DTO, creating a `TaskResponseDTO`, and implementing mapping logic.
 
-Begin by carefully comparing the fields in the frontend `Task` type with the existing `Task.java` entity (`backend/src/main/java/com/taskflow/backend/model/`). Ensure the entity class includes corresponding fields for `title`, `description`, `status`, `priority`, `type`, `storyPoints`, `dueDate`, `createdAt`, and `updatedAt`, using appropriate Java types (e.g., `String`, `Integer`, `LocalDateTime`/`LocalDate`). Special attention should be paid to relationships and collections: represent the `assignee` using a `@ManyToOne` relationship to the `User` entity, and handle `labels` and `dependencies` (which are string arrays in the frontend) using JPA's `@ElementCollection` or potentially a `@ManyToMany` relationship if dependencies refer to other tasks. Use `@PrePersist` and `@PreUpdate` lifecycle callbacks to automatically manage `createdAt` and `updatedAt` timestamps.
+### 2.1 Update Task Entity
+- [ ] Compare frontend `Task` type with existing `Task.java` entity (`backend/src/main/java/com/taskflow/backend/model/`)
+- [ ] Ensure entity includes corresponding fields:
+  - [ ] `title` (String)  
+  - [ ] `description` (String)
+  - [ ] `status` (String)
+  - [ ] `priority` (String)
+  - [ ] `type` (String)
+  - [ ] `storyPoints` (Integer)
+  - [ ] `dueDate` (LocalDateTime/LocalDate)
+  - [ ] `createdAt` (LocalDateTime)
+  - [ ] `updatedAt` (LocalDateTime)
+- [ ] Set up relationships:
+  - [ ] Represent `assignee` using `@ManyToOne` relationship to the `User` entity
+  - [ ] Handle `labels` and `dependencies` (which are string arrays in the frontend) using:
+    - [ ] JPA's `@ElementCollection`, or
+    - [ ] `@ManyToMany` relationship if dependencies refer to other tasks
+- [ ] Add lifecycle callbacks:
+  - [ ] Use `@PrePersist` to automatically manage `createdAt` timestamp
+  - [ ] Use `@PreUpdate` to automatically manage `updatedAt` timestamp
 
-Next, adapt the `TaskRequest.java` DTO (`backend/src/main/java/com/taskflow/backend/dto/`). This DTO is used to receive data *from* the frontend during task creation (`POST`) and updates (`PUT`). It must include fields for all data the frontend might send, such as `title`, `description`, `status`, `priority`, `type`, `storyPoints`, `labels`, and `dependencies`. Crucially, for the assignee, it should expect the user's ID (e.g., `Long assigneeId`) rather than a complex `User` object. For dates like `dueDate`, accepting a `String` might be simpler if the frontend sends a specific format (e.g., 'YYYY-MM-DD'), which can then be parsed in the service layer.
+### 2.2 Adapt TaskRequest DTO
+- [ ] Update `TaskRequest.java` (`backend/src/main/java/com/taskflow/backend/dto/`)
+- [ ] **Purpose**: Used to receive data *from* the frontend during task creation (`POST`) and updates (`PUT`)
+- [ ] Include fields for all data the frontend might send:
+  - [ ] `title`
+  - [ ] `description`
+  - [ ] `status`
+  - [ ] `priority`
+  - [ ] `type`
+  - [ ] `storyPoints`
+  - [ ] `labels`
+  - [ ] `dependencies`
+- [ ] **Important**: For the assignee, expect the user's ID (e.g., `Long assigneeId`) rather than a complex `User` object
+- [ ] For dates like `dueDate`, consider accepting a `String` if the frontend sends a specific format (e.g., 'YYYY-MM-DD'), which can then be parsed in the service layer
 
-Because the existing `TaskController` likely returns the full `Task` entity, which might contain sensitive or unnecessary information or require specific formatting, it's best practice to introduce a dedicated `TaskResponseDTO.java` (`backend/src/main/java/com/taskflow/backend/dto/`). This DTO defines the exact structure of task data sent *to* the frontend. It should include all fields the frontend needs (`id`, `title`, `description`, `status`, etc.). For the `assignee`, include both `assigneeId` and `assigneeName` for easy display. Dates (`dueDate`, `createdAt`, `updatedAt`) should typically be formatted as Strings (e.g., ISO 8601 standard) for consistent handling across the frontend. Collections like `labels` and `dependencies` should be included as `List<String>`.
+### 2.3 Create TaskResponseDTO
+- [ ] Create `TaskResponseDTO.java` (`backend/src/main/java/com/taskflow/backend/dto/`)
+- [ ] **Purpose**: Defines the exact structure of task data sent *to* the frontend
+- [ ] **Rationale**: The existing `TaskController` likely returns the full `Task` entity, which might contain sensitive or unnecessary information or require specific formatting
+- [ ] Include all fields the frontend needs:
+  - [ ] `id`
+  - [ ] `title`
+  - [ ] `description`
+  - [ ] `status`
+  - [ ] `priority`
+  - [ ] `type`
+  - [ ] `storyPoints`
+  - [ ] For the `assignee`: include both `assigneeId` and `assigneeName` for easy display
+  - [ ] Dates: `dueDate`, `createdAt`, `updatedAt` (formatted as Strings, e.g., ISO 8601 standard) for consistent handling across the frontend
+  - [ ] Collections: `labels` and `dependencies` (as `List<String>`)
 
-To handle the conversions between these different representations (`TaskRequest` -> `Task` entity -> `TaskResponseDTO`), implement mapping logic. This is ideally done in a dedicated `TaskMapper` class (`backend/src/main/java/com/taskflow/backend/mapper/`). You can write manual mapping methods or leverage a library like MapStruct (if available in the project) to automate the generation of this boilerplate code. This mapper will be used within the `TaskService` to convert incoming `TaskRequest` objects to `Task` entities before saving, and to convert `Task` entities fetched from the database into `TaskResponseDTO` objects before sending them back to the controller.
+### 2.4 Implement Mapping Logic
+- [ ] Create `TaskMapper` class (`backend/src/main/java/com/taskflow/backend/mapper/`)
+- [ ] **Purpose**: Handle conversions between different representations (`TaskRequest` -> `Task` entity -> `TaskResponseDTO`)
+- [ ] **Implementation Options**:
+  - [ ] Write manual mapping methods
+  - [ ] Leverage a library like MapStruct (if available in the project) to automate the generation of this boilerplate code
+- [ ] **Usage**: This mapper will be used within the `TaskService` to:
+  - [ ] Convert incoming `TaskRequest` objects to `Task` entities before saving
+  - [ ] Convert `Task` entities fetched from the database into `TaskResponseDTO` objects before sending them back to the controller
 
-**3. Verifying and Updating Controller Endpoints**
+## 3. Verifying and Updating Controller Endpoints
 
-After creating the new DTOs and mappers, revisit the existing `TaskController.java`. Modify the methods that return task data (`getAllTasks` at `GET /` and `getTask` at `GET /{id}`) to return the new `TaskResponseDTO` (or `Page<TaskResponseDTO>`) instead of the raw `Task` entity. Ensure the methods handling creation (`POST /`) and updates (`PUT /{id}`) correctly accept the `TaskRequest` DTO and utilize the mapping logic within the `TaskService` to process it. Double-check that any pagination, filtering, or sorting parameters defined in the controller align with how the frontend intends to use them via `taskService.ts`. Briefly review the `CategoryController` and relevant parts of `UserController` as well to ensure consistency in response structures (`ApiResponse`) and DTO usage.
+After creating the new DTOs and mappers, revisit the existing `TaskController.java`. 
+
+### 3.1 Update TaskController Methods
+- [ ] Modify methods that return task data:
+  - [ ] `getAllTasks` at `GET /` → return `TaskResponseDTO` or `Page<TaskResponseDTO>`
+  - [ ] `getTask` at `GET /{id}` → return `TaskResponseDTO` instead of raw `Task` entity
+- [ ] Ensure methods handling creation and updates correctly accept `TaskRequest` DTO:
+  - [ ] `POST /` → accept `TaskRequest` and utilize mapping logic within `TaskService`
+  - [ ] `PUT /{id}` → accept `TaskRequest` and utilize mapping logic within `TaskService`
+- [ ] Double-check that any pagination, filtering, or sorting parameters defined in the controller align with how the frontend intends to use them via `taskService.ts`
+
+### 3.2 Review Related Controllers
+- [ ] Check `CategoryController` for consistency in response structures (`ApiResponse`) and DTO usage
+- [ ] Review relevant parts of `UserController` for consistency in response structures (`ApiResponse`) and DTO usage
+
+### 3.3 Final Verification
+- [ ] Test all modified endpoints
+- [ ] Ensure DTO mappings work correctly
+- [ ] Verify data flows properly between frontend and backend
+- [ ] Test error handling scenarios
