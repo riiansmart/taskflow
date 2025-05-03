@@ -4,7 +4,7 @@ import api from './api';
 import { User } from '../types/User';
 
 // Get profile data for the logged-in user
-export const getProfile = async (): Promise<User> => {
+export const getCurrentUser = async (): Promise<User> => {
   const response = await api.get('/users/profile');
   return response.data;
 };

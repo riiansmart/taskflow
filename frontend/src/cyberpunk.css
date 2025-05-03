@@ -162,36 +162,47 @@ body::before {
 }
 
 .theme-toggle {
-    width: 60px;
-    height: 30px;
+    width: 44px;
+    height: 20px;
     background-color: var(--bg-secondary);
-    border-radius: 15px;
+    border-radius: 10px;
     position: relative;
     cursor: pointer;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
+    border: none;
+    overflow: hidden; /* ensures knob glow doesn't spill */
+    transition: background-color 0.3s ease;
+    /* subtle inner shadow for track */
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
+}
+
+/* Give filled track when light mode (as "on" state) */
+.light-mode .theme-toggle {
+    background-color: rgba(var(--accent-primary-rgb), 0.4);
+    box-shadow: inset 0 0 6px rgba(var(--accent-primary-rgb), 0.6);
 }
 
 .theme-toggle::before {
     content: '';
     position: absolute;
-    left: 4px;
-    top: 4px;
-    width: 22px;
-    height: 22px;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background-color: var(--accent-primary);
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.5);
+    box-shadow: 0 0 4px rgba(var(--accent-primary-rgb),0.6);
+    transition: transform 0.3s ease;
 }
 
+/* Knob color switch for light mode for contrast */
 .light-mode .theme-toggle::before {
-    left: 34px;
+    background-color: var(--bg-primary);
+    transform: translateX(24px);
+    box-shadow: 0 0 4px rgba(var(--border-color),0.4);
 }
 
 .theme-toggle:hover::before {
-    box-shadow: 0 0 15px var(--accent-primary);
+    box-shadow: 0 0 6px rgba(var(--accent-primary-rgb), 0.6);
 }
 
 .welcome-section {
@@ -217,6 +228,25 @@ body::before {
     height: 3px;
     background: var(--accent-primary);
     box-shadow: 0 0 10px var(--accent-primary);
+}
+
+/* New utility for heading underlines */
+.heading-underline {
+  position: relative; /* Needed for pseudo-element positioning */
+  display: inline-block; /* Ensure it only takes width of content */
+  padding-bottom: 8px; /* Add space for the underline */
+}
+
+.heading-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Center the underline */
+    transform: translateX(-50%); /* Center the underline */
+    width: 50px; /* Adjust width as needed */
+    height: 3px; /* Adjust height as needed */
+    background-color: var(--accent-primary);
+    box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.7); /* Optional glow */
 }
 
 .welcome-description {
@@ -384,16 +414,11 @@ body::before {
     cursor: pointer;
     transition: color 0.2s;
     padding: 0 0.5rem;
+    box-sizing: border-box;
 }
 
 .task-list-header-item:hover {
     color: var(--accent-primary);
-}
-
-.task-list-header-item.sortable::after {
-    content: '⌄';
-    margin-left: 5px;
-    font-size: 1rem;
 }
 
 .task-list-body {
@@ -424,6 +449,7 @@ body::before {
 
 .task-cell {
     padding: 0 0.5rem;
+    box-sizing: border-box;
 }
 
 /* Checkbox */
@@ -1189,4 +1215,177 @@ body::before {
     align-items: center;
     text-align: center;
     padding: 2rem 0;
+}
+
+/* Add dedicated CTA button style */
+.cta-button {
+  display: inline-block; /* Allow centering via text-align on parent */
+  background-color: var(--accent-primary);
+  color: var(--bg-primary); /* Ensure high contrast text */
+  border: none;
+  padding: 0.75rem 2rem; /* Adjust padding (was py-3 px-8) */
+  border-radius: 8px; /* Example, adjust as needed (was rounded-lg) */
+  font-weight: 700; /* Was font-bold */
+  font-size: 1.125rem; /* Example, adjust as needed (was text-lg) */
+  text-transform: none; /* Buttons are often uppercase, override if needed */
+  letter-spacing: normal; /* Override if needed */
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.cta-button:hover {
+  /* Slightly darker/different accent or increased shadow */
+  background-color: var(--accent-secondary); /* Example hover */
+  box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.6);
+  transform: translateY(-2px);
+}
+
+.card {
+  background-color: rgba(var(--bg-secondary-rgb, 20, 20, 32), 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.3);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0 20px rgba(var(--accent-primary-rgb), 0.6);
+  transform: translateY(-4px);
+}
+
+.card p {
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.card .font-semibold {
+  color: var(--accent-primary);
+}
+
+/* =======================
+   OAuth (GitHub) Button
+   ======================= */
+
+.oauth-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.github-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #2ecc71; /* Green */
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow);
+}
+
+.github-button:hover {
+  background-color: #28b463; /* Slightly darker green */
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+.github-button i {
+  /* Ensure icon and text spacing remains consistent */
+  font-size: 1rem;
+}
+
+/* Back to Home link */
+.back-home-container {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.back-home-link {
+  color: var(--accent-secondary);
+  font-size: 0.9rem;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.back-home-link:hover {
+  background-color: rgba(var(--accent-primary-rgb), 0.1);
+  color: var(--accent-primary);
+}
+
+/* OR separator */
+.or-container {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+.or-text {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Light Mode Overrides for MDEditor Preview */
+.light-mode .wmde-markdown {
+  background-color: var(--bg-secondary) !important; /* Match wrapper */
+  color: var(--text-primary) !important;
+}
+.light-mode .wmde-markdown h1,
+.light-mode .wmde-markdown h2,
+.light-mode .wmde-markdown h3,
+.light-mode .wmde-markdown h4,
+.light-mode .wmde-markdown h5,
+.light-mode .wmde-markdown h6 {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+.light-mode .wmde-markdown code {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--accent-secondary) !important; /* Using accent for code */
+  border-color: var(--border-color) !important;
+}
+.light-mode .wmde-markdown pre {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+.light-mode .wmde-markdown pre code {
+  color: var(--text-primary) !important;
+  background-color: transparent !important; /* Ensure pre background shows */
+}
+.light-mode .wmde-markdown blockquote {
+  border-left-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  background-color: var(--bg-tertiary) !important;
+}
+.light-mode .wmde-markdown hr {
+  background-color: var(--border-color) !important;
+}
+.light-mode .wmde-markdown th,
+.light-mode .wmde-markdown td {
+  border-color: var(--border-color) !important;
+}
+.light-mode .wmde-markdown th {
+  background-color: var(--bg-tertiary) !important;
+}
+.light-mode .wmde-markdown tr:nth-child(even) {
+  background-color: var(--bg-tertiary) !important;
+}
+.light-mode .wmde-markdown a {
+  color: var(--accent-primary) !important;
+}
+.light-mode .wmde-markdown a:hover {
+  color: var(--accent-secondary) !important;
+  border-bottom-color: var(--accent-secondary) !important;
+}
+.light-mode .wmde-markdown ul li::marker,
+.light-mode .wmde-markdown ol li::marker {
+  color: var(--text-secondary) !important;
 }

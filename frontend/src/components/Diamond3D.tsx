@@ -5,7 +5,9 @@ import { useTheme } from '../context/ThemeContext';
 import './Diamond3D.css';
 import { Edges } from '@react-three/drei';
 
-function SpinningDiamond({ primary, secondary }: { primary: string; secondary: string }) {
+interface SpinningDiamondProps { baseColor: string; edgeColor: string }
+
+function SpinningDiamond({ baseColor, edgeColor }: SpinningDiamondProps) {
   // group for axis tilt and precession
   const group = useRef<THREE.Group>(null!);
   const mesh = useRef<THREE.Mesh>(null!);
@@ -37,8 +39,8 @@ function SpinningDiamond({ primary, secondary }: { primary: string; secondary: s
       >
         <octahedronGeometry args={[1.2, 0]} />
         <meshPhysicalMaterial
-          color={primary}
-          emissive={secondary}
+          color={baseColor}
+          emissive={'#000000'}
           metalness={1}
           roughness={0}
           transmission={0.9}
@@ -47,20 +49,25 @@ function SpinningDiamond({ primary, secondary }: { primary: string; secondary: s
           clearcoat={1}
           clearcoatRoughness={0.1}
         />
-        <Edges color={secondary} threshold={15} />
+        <Edges color={edgeColor} threshold={15} />
       </mesh>
     </group>
   );
 }
 
 export default function Diamond3D() {
-  const { accentPrimary: primary, accentSecondary: secondary } = useTheme();
+  const { isLightMode } = useTheme();
+
+  // Use neutral greyscale palette so diamond has no accent tint
+  const baseColor = isLightMode ? '#ffffff' : '#cccccc';
+  const edgeColor = isLightMode ? '#666666' : '#ffffff';
+
   return (
     <div className="diamond3d-container">
-      <Canvas key={`${primary}-${secondary}`} shadows camera={{ position: [0, 0, 3], fov: 50 }}>
+      <Canvas key={isLightMode ? 'light' : 'dark'} shadows camera={{ position: [0, 0, 3], fov: 50 }}>
         <ambientLight intensity={0.3} />
         <directionalLight castShadow intensity={0.8} position={[2, 5, 2]} />
-        <SpinningDiamond primary={primary} secondary={secondary} />
+        <SpinningDiamond baseColor={baseColor} edgeColor={edgeColor} />
       </Canvas>
     </div>
   );

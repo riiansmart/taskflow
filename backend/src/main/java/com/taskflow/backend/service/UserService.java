@@ -6,6 +6,9 @@ import com.taskflow.backend.exception.UnauthorizedException;
 import com.taskflow.backend.model.User;
 import com.taskflow.backend.repository.UserRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +27,44 @@ public class UserService {
     }
 
     public User getCurrentUser() {
-        // TODO: Implement getting current user from security context
-        throw new UnauthorizedException("Not implemented");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new UnauthorizedException("User not authenticated");
+        }
+
+        String username; // This will be the email
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else if (principal instanceof String) {
+             username = (String) principal;
+        } else {
+            // Handle other principal types if necessary, or throw an error
+            throw new UnauthorizedException("Unsupported principal type: " + principal.getClass().getName());
+        }
+        
+        // Assuming username from token/principal is the email
+        return userRepository.findByEmail(username)
+               .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + username));
     }
 
     @Transactional
     public User updateUser(User user) {
-        User existingUser = getCurrentUser();
-        // TODO: Update user fields
-        return userRepository.save(existingUser);
+        User currentUser = getCurrentUser(); // Get the user from DB based on security context
+        
+        // Update allowed fields (e.g., name, settings)
+        if (user.getName() != null) {
+             currentUser.setName(user.getName());
+        }
+        if (user.getSettings() != null) {
+             currentUser.setSettings(user.getSettings());
+        }
+        // Add other updatable fields as needed
+        
+        // Don't update sensitive fields like email, password, role, provider from this method
+
+        return userRepository.save(currentUser);
     }
 
     public Map<String, Object> getUserPreferences() {
@@ -43,8 +75,14 @@ public class UserService {
     @Transactional
     public void updateUserPreferences(Object preferences) {
         User user = getCurrentUser();
-        user.setSettings((Map<String, Object>) preferences);
-        userRepository.save(user);
+        // Ensure preferences is actually a Map before casting
+        if (preferences instanceof Map) {
+             user.setSettings((Map<String, Object>) preferences);
+             userRepository.save(user);
+        } else {
+             // Handle incorrect preference format if needed
+             throw new IllegalArgumentException("Preferences must be a valid map.");
+        }
     }
 
     public Page<?> getUserActivity(PageRequest pageRequest) {

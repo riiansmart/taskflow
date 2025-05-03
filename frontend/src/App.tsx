@@ -4,12 +4,11 @@ import LandingPage from './pages/LandingPage';
 import { useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
+import { OAuthRedirectPage } from './pages/OAuthRedirectPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
-import NewTaskPage from './pages/NewTaskPage';
-import EditTaskPage from './pages/EditTaskPage';
 import { Layout } from './components/Layout';
+import { TaskFlowDashboard } from './components/TaskFlowDashboard';
 
 function App() {
   const { user } = useAuth();
@@ -18,6 +17,7 @@ function App() {
     <Routes>
       {/* Public landing page always available */}
       <Route path="/" element={<LandingPage />} />
+
       {/* Public routes */}
       <Route
         path="/login"
@@ -27,21 +27,17 @@ function App() {
         path="/register"
         element={!user ? <RegisterPage /> : <Navigate to="/dashboard" replace />}
       />
-      
-      {/* Protected routes under Layout */}
+      {/* OAuth Callback Route - public, handles redirect */}
+      <Route path="/oauth/redirect" element={<OAuthRedirectPage />} />
+
+      {/* Protected routes - All inside Layout */}
       <Route
         element={user ? <Layout /> : <Navigate to="/login" replace />}
       >
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<TaskFlowDashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/tasks/new" element={<NewTaskPage />} />
-        <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
-        
-        {/* 404 page for protected routes */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-      {/* Catch-all redirects to landing */}
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { TaskListPreview } from '../components/TaskListPreview'
 import React from 'react'
 import Navbar from '../components/Navbar'
 
@@ -36,10 +35,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section style={{ marginBottom: '4rem' }}>
-          <h2 className="welcome-text" style={{ fontSize: '1.5rem' }}>Task List Preview</h2>
-          <TaskListPreview />
-        </section>
 
         <div>
           <Link to="/register" className="filter-button" style={{ padding: '0.7rem 1.5rem', fontWeight: 600 }}>Get Started</Link>
