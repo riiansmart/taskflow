@@ -1,7 +1,7 @@
 // getTasks(), createTask(), updateTask(), deleteTask()
 
 import api from './api';
-import { Task } from '../types/Task';
+import { Task } from '../types/task.types';
 
 // Fetch all tasks for the current user
 export const getTasks = async () => {
@@ -38,6 +38,7 @@ export const getTaskById = async (id: number): Promise<Task> => {
     description: dto.description,
     // Only date part for date input
     dueDate: dto.dueDate ? dto.dueDate.split('T')[0] : '',
+    status: dto.status,
     priority: dto.priority,
     completed: dto.completed,
     userId: dto.user ? dto.user.id : 0,

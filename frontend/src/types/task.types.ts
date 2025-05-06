@@ -1,37 +1,30 @@
-// frontend/src/types/task.types.ts
+/**
+ * task.types.ts
+ * Type definitions for tasks and related enums.
+ */
+
+export enum TaskStatus {
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE'
+}
+
+export enum TaskPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
 
 export interface Task {
-  id: string;
-  title: string;
-  type: 'feature' | 'bug' | 'improvement'; // Example types
-  status: 'todo' | 'in-progress' | 'review' | 'done'; // Example statuses
-  priority: 'low' | 'medium' | 'high'; // Example priorities
-  dueDate: string; // Consider using Date object if time is important
-  assignee: string;
-  storyPoints?: number; // Optional field
-  description: string;
-  createdAt: string; // ISO 8601 string format
-  updatedAt: string; // ISO 8601 string format
-
-  /**
-   * Array of acceptance criteria strings associated with the task.
-   * Optional because not every task will define them.
-   */
-  acceptanceCriteria?: string[]
-
-  /**
-   * Labels/tags assigned to the task for filtering or grouping.
-   */
-  labels?: string[]
-
-  /**
-   * Activity feed items (comments, status changes, etc.)
-   */
-  activity?: Array<{
-    id: string
-    user: string
-    /** ISO string */
-    date: string
-    comment: string
-  }>
+  id: string
+  title: string
+  description?: string
+  dueDate: string
+  status: TaskStatus
+  priority: TaskPriority
+  completed: boolean
+  userId: number
+  categoryId?: number
+  createdAt?: string
+  updatedAt?: string
 }

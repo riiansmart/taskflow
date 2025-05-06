@@ -1,7 +1,7 @@
 // Fetch and filter tasks
 
 import { useEffect, useState } from 'react';
-import { Task } from '../types/Task';
+import { Task } from '../types/task.types';
 import { getTasks } from '../services/taskService';
 import { useAuth } from './useAuth';
 
@@ -15,7 +15,7 @@ export const useTasks = () => {
   useEffect(() => {
     if (!token) return;
     setLoading(true);
-    getTasks(token)
+    getTasks()
       .then((data) => setTasks(data))
       .catch(() => setError('Failed to fetch tasks'))
       .finally(() => setLoading(false));

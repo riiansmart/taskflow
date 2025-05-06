@@ -1,11 +1,25 @@
-import { Task } from '../types/task.types'
-import { FileText, X, Edit2, Eye, Check, Copy } from 'lucide-react'
-import '../styles/taskflow-dashboard.css'
-import MDEditor from '@uiw/react-md-editor'
-import { useState } from 'react'
-import { useTheme } from '../context/ThemeContext'
+/**
+ * MainContentPanel.tsx
+ * Central panel component that displays task details and enables task editing.
+ * Features a tabbed interface for managing multiple open tasks and a rich markdown editor.
+ */
 
-// Define props interface
+import { Task } from '../types/task.types'  // Task type definitions
+import { FileText, X, Edit2, Eye, Check, Copy } from 'lucide-react'  // UI icons
+import '../styles/taskflow-dashboard.css'  // Component styles
+import MDEditor from '@uiw/react-md-editor'  // Markdown editor component
+import { useState } from 'react'
+import { useTheme } from '../context/ThemeContext'  // Theme context for editor styling
+
+/**
+ * Props for the MainContentPanel component
+ * @interface MainContentPanelProps
+ * @property {Task[]} openTasks - Array of currently open tasks
+ * @property {string | null} activeTaskId - ID of the currently active task
+ * @property {function} onTabSelect - Callback when a tab is selected
+ * @property {function} onCloseTab - Callback when a tab is closed
+ * @property {function} onTaskUpdate - Callback when a task is updated
+ */
 interface MainContentPanelProps {
   openTasks: Task[]
   activeTaskId: string | null
@@ -14,6 +28,20 @@ interface MainContentPanelProps {
   onTaskUpdate: (task: Task) => void
 }
 
+/**
+ * MainContentPanel Component
+ * Displays task details in a tabbed interface with editing capabilities.
+ * Features:
+ * - Tabbed interface for multiple tasks
+ * - Markdown editor for task description
+ * - Task metadata display
+ * - Activity timeline
+ * - Acceptance criteria list
+ * - Label management
+ * 
+ * @param {MainContentPanelProps} props - Component props
+ * @returns {JSX.Element} The main content panel component
+ */
 export function MainContentPanel({ 
   openTasks,
   activeTaskId,
@@ -21,13 +49,21 @@ export function MainContentPanel({
   onCloseTab,
   onTaskUpdate
 }: MainContentPanelProps) {
+  // Theme context for editor styling
   const { isLightMode } = useTheme()
   const colorMode = isLightMode ? 'light' : 'dark'
 
-  const [isEditing, setIsEditing] = useState(false)
-  const [copySuccess, setCopySuccess] = useState(false)
+  // Local state management
+  const [isEditing, setIsEditing] = useState(false)  // Toggle between edit/preview mode
+  const [copySuccess, setCopySuccess] = useState(false)  // Track copy operation success
+  
+  // Get the currently active task
   const activeTask = openTasks.find(task => task.id === activeTaskId)
 
+  /**
+   * Handles changes to the task description in the markdown editor
+   * @param {string} value - New description content
+   */
   const handleDescriptionChange = (value?: string) => {
     if (activeTask && value !== undefined) {
       onTaskUpdate({
@@ -37,6 +73,10 @@ export function MainContentPanel({
     }
   }
 
+  /**
+   * Handles copying task description to clipboard
+   * Shows success indicator temporarily
+   */
   const handleCopyContent = async () => {
     if (activeTask?.description) {
       try {
@@ -51,7 +91,7 @@ export function MainContentPanel({
 
   return (
     <div className="main-content">
-      {/* Tab Bar */}
+      {/* Tab Bar - Displays open tasks */}
       <div className="tabs-bar">
         {openTasks.length === 0 && (
           <div className="p-2 px-4 text-gray-500 italic text-sm">No tasks open</div>
@@ -85,6 +125,7 @@ export function MainContentPanel({
       <div className="task-content">
         {activeTask ? (
           <div className="max-w-4xl mx-auto px-4 py-6">
+            {/* Task Header - ID, Status, Priority */}
             <div className="task-header mb-8">
               <div className="task-badges mb-4">
                 <span className="task-badge id">{activeTask.id}</span>
@@ -99,10 +140,12 @@ export function MainContentPanel({
             </div>
             
             <div className="space-y-8">
+              {/* Description Section with Markdown Editor */}
               <div className="task-section">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="task-section-title">Description</h3>
                   <div className="flex items-center gap-2">
+                    {/* Copy Content Button */}
                     <button
                       onClick={handleCopyContent}
                       className="p-1.5 rounded hover:bg-secondary text-secondary hover:text-primary transition-colors"
@@ -110,6 +153,7 @@ export function MainContentPanel({
                     >
                       {copySuccess ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
                     </button>
+                    {/* Toggle Edit/Preview Button */}
                     <button
                       onClick={() => setIsEditing(!isEditing)}
                       className="p-1.5 rounded hover:bg-secondary text-secondary hover:text-primary transition-colors"
@@ -119,6 +163,7 @@ export function MainContentPanel({
                     </button>
                   </div>
                 </div>
+                {/* Markdown Editor/Preview */}
                 <div className="markdown-editor bg-secondary">
                   {isEditing ? (
                     <MDEditor
@@ -157,6 +202,7 @@ export function MainContentPanel({
                 </div>
               </div>
               
+              {/* Acceptance Criteria Section */}
               <div className="task-section">
                 <h3 className="task-section-title mb-4 text-primary">Acceptance Criteria</h3>
                 <ul className="space-y-2 text-sm text-gray-300">
@@ -171,6 +217,7 @@ export function MainContentPanel({
                 </ul>
               </div>
               
+              {/* Labels Section */}
               {activeTask.labels && activeTask.labels.length > 0 && (
                 <div className="task-section">
                   <h3 className="task-section-title mb-4">Labels</h3>
@@ -187,6 +234,7 @@ export function MainContentPanel({
                 </div>
               )}
               
+              {/* Activity Timeline Section */}
               <div className="task-section">
                 <h3 className="task-section-title mb-4">Activity</h3>
                 <div className="space-y-4">
@@ -222,6 +270,11 @@ export function MainContentPanel({
   )
 }
 
+/**
+ * Helper function to get the appropriate CSS class for a label's color
+ * @param {string} label - The label text
+ * @returns {string} CSS class name for the label color
+ */
 function getLabelColor(label: string): string {
   switch (label.toLowerCase()) {
     case 'frontend':

@@ -1,24 +1,26 @@
 package com.taskflow.backend.controller;
 
-import com.taskflow.backend.dto.ApiResponse;
-import com.taskflow.backend.dto.JwtResponse;
-import com.taskflow.backend.model.User;
-import com.taskflow.backend.repository.UserRepository;
-import com.taskflow.backend.security.JwtTokenProvider;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import com.taskflow.backend.model.User;
+import com.taskflow.backend.repository.UserRepository;
+import com.taskflow.backend.security.JwtTokenProvider;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/auth/oauth2")
@@ -66,7 +68,6 @@ public class OAuth2Controller {
 
             // Generate JWT tokens
             String token = jwtTokenProvider.generateToken(authentication);
-            String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
             // Redirect to frontend with token
             String redirectUrl = String.format("http://localhost:5173/dashboard?token=%s",

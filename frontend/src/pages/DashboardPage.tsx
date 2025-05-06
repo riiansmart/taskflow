@@ -1,27 +1,51 @@
-// src/pages/DashboardPage.tsx
+/**
+ * DashboardPage.tsx
+ * Main dashboard interface for task management.
+ * Features a responsive grid layout with filtering, sorting, and bulk actions.
+ */
+
 import { useState, useEffect } from 'react';
 import { getTasks, deleteTask } from '../services/taskService';
 import { useAuth } from '../hooks/useAuth';
-import { Task } from '../types/Task';
+import { Task, TaskStatus, TaskPriority } from '../types/task.types';
 import { formatDate, isOverdue } from '../utils/dateUtils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getUserInfo } from '../services/authService';
 
+/**
+ * DashboardPage Component
+ * Main interface for task management with:
+ * - Task list with sorting and filtering
+ * - Search functionality
+ * - Status and priority filters
+ * - Bulk actions
+ * - Task CRUD operations
+ * 
+ * @returns {JSX.Element} The dashboard page component
+ */
 const DashboardPage = () => {
+  // Authentication and navigation
   const { token, login, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Task state management
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
+
+  // Filter state management
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'STATUS' | 'PRIORITY' | 'ALL'>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL');
-  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'>('ALL');
-  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'ALL'>('ALL');
+  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'ALL'>('ALL');
 
+  /**
+   * Handle OAuth redirect and user session setup
+   * Checks for token in URL and fetches user info
+   */
   useEffect(() => {
-    // Check for token in URL (from OAuth redirect)
     const token = searchParams.get('token');
     if (token && !user) {
       // First store the token
@@ -37,7 +61,10 @@ const DashboardPage = () => {
     }
   }, [searchParams, login, navigate, user]);
 
-  // Load tasks on component mount
+  /**
+   * Load tasks on component mount
+   * Fetches tasks from API when token is available
+   */
   useEffect(() => {
     if (!token) return;
     
@@ -45,7 +72,7 @@ const DashboardPage = () => {
     getTasks()
       .then(response => {
         console.log('Dashboard tasks response:', response);
-        // Check if response is an array or has a content property
+        // Handle different response formats
         if (Array.isArray(response)) {
           setTasks(response);
         } else if (response && response.content) {
@@ -64,13 +91,17 @@ const DashboardPage = () => {
       });
   }, [token]);
 
-  // Handle task deletion
-  const handleDeleteTask = async (id: number) => {
+  /**
+   * Handles task deletion
+   * Confirms with user before deleting
+   * @param {string} id - ID of task to delete
+   */
+  const handleDeleteTask = async (id: string) => {
     if (!token) return;
     
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
-        await deleteTask(id);
+        await deleteTask(Number(id));
         setTasks(tasks.filter(task => task.id !== id));
       } catch (err) {
         console.error('Failed to delete task:', err);
@@ -79,13 +110,20 @@ const DashboardPage = () => {
     }
   };
 
-  // Handle editing a task
-  const handleEditTask = (id: number) => {
+  /**
+   * Navigates to task edit page
+   * @param {string} id - ID of task to edit
+   */
+  const handleEditTask = (id: string) => {
     navigate(`/tasks/${id}/edit`);
   };
 
-  // Handle checkbox selection
-  const handleTaskSelect = (id: number) => {
+  /**
+   * Handles individual task selection
+   * Toggles task selection state
+   * @param {string} id - ID of task to select/deselect
+   */
+  const handleTaskSelect = (id: string) => {
     if (selectedTasks.includes(id)) {
       setSelectedTasks(selectedTasks.filter(taskId => taskId !== id));
     } else {
@@ -93,7 +131,10 @@ const DashboardPage = () => {
     }
   };
 
-  // Handle select all checkbox
+  /**
+   * Handles select all checkbox
+   * Toggles selection of all filtered tasks
+   */
   const handleSelectAll = () => {
     if (selectedTasks.length === filteredTasks.length) {
       setSelectedTasks([]);
@@ -102,16 +143,17 @@ const DashboardPage = () => {
     }
   };
 
-  // Filter tasks based on search term and active filters
+  /**
+   * Filters tasks based on search term and active filters
+   * Applies text search, status, and priority filters
+   */
   const filteredTasks = tasks.filter(task => {
     // Text search filter
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (task.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+                         (task.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
     // Status filter
-    const matchesStatus = statusFilter === 'ALL' || 
-                         (statusFilter === 'TODO' && !task.completed) ||
-                         (statusFilter === 'DONE' && task.completed);
+    const matchesStatus = statusFilter === 'ALL' || task.status === statusFilter;
     
     // Priority filter
     const matchesPriority = priorityFilter === 'ALL' || task.priority === priorityFilter;
@@ -125,12 +167,15 @@ const DashboardPage = () => {
 
   return (
     <>
+      {/* Welcome Section */}
       <section className="welcome-section">
         <h1 className="welcome-text">Welcome back</h1>
         <p className="welcome-description">Here's a list of your tasks for this month</p>
       </section>
 
+      {/* Toolbar Section */}
       <div className="toolbar">
+        {/* Search Input */}
         <div className="search-container">
           <i className="fas fa-search search-icon"></i>
           <input 
@@ -141,6 +186,8 @@ const DashboardPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+
+        {/* Filter Buttons */}
         <div className="filter-options">
           <button 
             className={`filter-button ${activeFilter === 'STATUS' ? 'active' : ''}`}
@@ -170,6 +217,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* Status Filter Tags */}
       {activeFilter === 'STATUS' && (
         <div className="filter-tags">
           <button 
@@ -179,20 +227,21 @@ const DashboardPage = () => {
             All
           </button>
           <button 
-            className={`filter-tag ${statusFilter === 'TODO' ? 'active' : ''}`}
-            onClick={() => setStatusFilter('TODO')}
+            className={`filter-tag ${statusFilter === TaskStatus.TODO ? 'active' : ''}`}
+            onClick={() => setStatusFilter(TaskStatus.TODO)}
           >
             To Do
           </button>
           <button 
-            className={`filter-tag ${statusFilter === 'DONE' ? 'active' : ''}`}
-            onClick={() => setStatusFilter('DONE')}
+            className={`filter-tag ${statusFilter === TaskStatus.DONE ? 'active' : ''}`}
+            onClick={() => setStatusFilter(TaskStatus.DONE)}
           >
             Completed
           </button>
         </div>
       )}
 
+      {/* Priority Filter Tags */}
       {activeFilter === 'PRIORITY' && (
         <div className="filter-tags">
           <button 
@@ -202,29 +251,32 @@ const DashboardPage = () => {
             All
           </button>
           <button 
-            className={`filter-tag ${priorityFilter === 'LOW' ? 'active' : ''}`}
-            onClick={() => setPriorityFilter('LOW')}
+            className={`filter-tag ${priorityFilter === TaskPriority.LOW ? 'active' : ''}`}
+            onClick={() => setPriorityFilter(TaskPriority.LOW)}
           >
             Low
           </button>
           <button 
-            className={`filter-tag ${priorityFilter === 'MEDIUM' ? 'active' : ''}`}
-            onClick={() => setPriorityFilter('MEDIUM')}
+            className={`filter-tag ${priorityFilter === TaskPriority.MEDIUM ? 'active' : ''}`}
+            onClick={() => setPriorityFilter(TaskPriority.MEDIUM)}
           >
             Medium
           </button>
           <button 
-            className={`filter-tag ${priorityFilter === 'HIGH' ? 'active' : ''}`}
-            onClick={() => setPriorityFilter('HIGH')}
+            className={`filter-tag ${priorityFilter === TaskPriority.HIGH ? 'active' : ''}`}
+            onClick={() => setPriorityFilter(TaskPriority.HIGH)}
           >
             High
           </button>
         </div>
       )}
 
+      {/* Error Message */}
       {error && <div className="error-message">{error}</div>}
 
+      {/* Task List */}
       <div className="task-list">
+        {/* List Header */}
         <div className="task-list-header">
           <div className="task-list-header-item task-header-checkbox">
             <input 
@@ -244,6 +296,7 @@ const DashboardPage = () => {
           <div className="task-list-header-item task-header-actions">Actions</div>
         </div>
         
+        {/* List Body */}
         <div className="task-list-body">
           {loading ? (
             <div className="loading-message">

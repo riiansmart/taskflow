@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getTaskById, updateTask } from '../services/taskService';
 import { getCategories } from '../services/categoryService';
 import { useAuth } from '../hooks/useAuth';
-import { Task, Priority } from '../types/Task';
-import { Category } from '../types/Category';
+import { Task, TaskPriority } from '../types/task.types';
+import { Category } from '../types/category.types';
 
 const EditTaskPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +14,7 @@ const EditTaskPage = () => {
     title: '',
     description: '',
     dueDate: '',
-    priority: 'MEDIUM' as Priority,
+    priority: 'MEDIUM' as TaskPriority,
     completed: false,
     userId: user?.id || 0,
     categoryId: undefined,

@@ -1,14 +1,41 @@
+/**
+ * TimelinePanel.tsx
+ * Timeline visualization component that displays tasks in a Gantt-chart style interface.
+ * Features a resizable, collapsible panel with drag handles and fullscreen support.
+ */
+
 import { format, addDays, subDays } from 'date-fns'
 import { Task } from '../types/task.types'
 import { ChevronDown, Clock, Maximize2, Minimize2, X } from 'lucide-react'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 
+/**
+ * Props for the TimelinePanel component
+ * @interface TimelinePanelProps
+ * @property {Task[]} tasks - Array of tasks to display in the timeline
+ * @property {function} [onClose] - Optional callback when panel is closed
+ * @property {function} [onMaximize] - Optional callback when panel is maximized
+ */
 interface TimelinePanelProps {
   tasks: Task[]
   onClose?: () => void
   onMaximize?: () => void
 }
 
+/**
+ * TimelinePanel Component
+ * Displays tasks in a timeline/Gantt chart view with interactive features.
+ * Features:
+ * - Resizable panel height with drag handle
+ * - Collapsible panel for space efficiency
+ * - Fullscreen mode for detailed view
+ * - Task progress visualization
+ * - Date-based navigation
+ * - Status-based color coding
+ * 
+ * @param {TimelinePanelProps} props - Component props
+ * @returns {JSX.Element} The timeline panel component
+ */
 export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps) {
   const [isResizing, setIsResizing] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -52,7 +79,7 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
     document.addEventListener('mouseup', handleMouseUp)
   }
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing || !panelRef.current) return
 
     const deltaY = startYRef.current - e.clientY
@@ -62,13 +89,13 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
     )
     
     panelRef.current.style.height = `${newHeight}px`
-  }
+  }, [isResizing])
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsResizing(false)
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
-  }
+  }, [handleMouseMove])
 
   const handleClose = () => {
     if (!onClose) return
@@ -91,7 +118,7 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [])
+  }, [handleMouseMove, handleMouseUp])
 
   return (
     <div 
@@ -210,17 +237,34 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
   )
 }
 
+/**
+ * Calculates the pixel offset for a task's position in the timeline
+ * @param {Date} taskDate - Start date of the task
+ * @param {Date[]} dates - Array of dates in the timeline
+ * @returns {number} Pixel offset from the left edge
+ */
 function getTaskOffset(taskDate: Date, dates: Date[]): number {
   const startDate = dates[0]
   const daysDiff = Math.floor((taskDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
   return (daysDiff * 96) + 192 // 96px per day (24px * 4), 192px initial offset
 }
 
+/**
+ * Calculates the pixel width for a task's duration bar
+ * @param {Date} startDate - Task start date
+ * @param {Date} endDate - Task end date
+ * @returns {number} Width in pixels for the task duration bar
+ */
 function getTaskDuration(startDate: Date, endDate: Date): number {
   const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
   return daysDiff * 96 // 96px per day
 }
 
+/**
+ * Calculates the pixel offset for today's date marker
+ * @param {Date[]} dates - Array of dates in the timeline
+ * @returns {number} Pixel offset for today's date marker
+ */
 function getTodayOffset(dates: Date[]): number {
   const today = new Date()
   return getTaskOffset(today, dates)
