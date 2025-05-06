@@ -1,24 +1,59 @@
+/**
+ * PropertiesPanel.tsx
+ * Task properties editor component that provides a form-like interface for editing task metadata.
+ * Features a clean, organized layout with dropdown selectors and input fields.
+ */
+
 import * as Select from '@radix-ui/react-select'
 import { ChevronDown, Plus, X } from 'lucide-react'
 import { Task, TaskPriority, TaskStatus } from '../types/task.types'
 import '../styles/dropdown.css'
 import '../styles/properties-panel.css'
 
+/**
+ * Props for the PropertiesPanel component
+ * @interface PropertiesPanelProps
+ * @property {Task | undefined} task - The task to edit, undefined if no task is selected
+ * @property {function} onTaskUpdate - Callback when task properties are updated
+ */
 interface PropertiesPanelProps {
   task: Task | undefined
   onTaskUpdate: (task: Task) => void
 }
 
+/**
+ * Mock user data for assignee selection
+ * In a real application, this would come from an API or database
+ */
 const users = [
   { id: '1', name: 'Alex Kim' },
   { id: '2', name: 'Morgan Smith' }
 ]
 
-const priorities: TaskPriority[] = ['low', 'medium', 'high', 'critical']
-const statuses: TaskStatus[] = ['todo', 'in-progress', 'review', 'done']
-const points = [1, 2, 3, 5, 8, 13]
+// Available options for task properties
+const priorities = Object.values(TaskPriority)
+const statuses = Object.values(TaskStatus)
+const points = [1, 2, 3, 5, 8, 13]  // Fibonacci sequence for story points
 
+/**
+ * PropertiesPanel Component
+ * Provides an interface for editing task metadata and properties.
+ * Features:
+ * - Status selection with visual indicators
+ * - Priority management
+ * - Story point estimation
+ * - Assignee selection
+ * - Due date management
+ * - Label management
+ * - Task dependencies
+ * 
+ * Uses Radix UI's Select component for consistent, accessible dropdowns
+ * 
+ * @param {PropertiesPanelProps} props - Component props
+ * @returns {JSX.Element} The properties panel component
+ */
 export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
+  // Show placeholder when no task is selected
   if (!task) {
     return (
       <div className="properties-panel">
@@ -27,39 +62,75 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
     )
   }
 
+  /**
+   * Updates the task's status
+   * @param {TaskStatus} status - New status value
+   */
   const handleStatusChange = (status: TaskStatus) => {
     onTaskUpdate({ ...task, status })
   }
 
+  /**
+   * Updates the task's priority level
+   * @param {TaskPriority} priority - New priority value
+   */
   const handlePriorityChange = (priority: TaskPriority) => {
     onTaskUpdate({ ...task, priority })
   }
 
+  /**
+   * Updates the task's story points
+   * @param {string} points - New story points value
+   */
   const handlePointsChange = (points: string) => {
     onTaskUpdate({ ...task, storyPoints: parseInt(points, 10) })
   }
 
+  /**
+   * Updates the task's assignee
+   * @param {string} assigneeId - ID of the selected user
+   */
   const handleAssigneeChange = (assigneeId: string) => {
     const assignee = users.find(u => u.id === assigneeId)?.name || ''
     onTaskUpdate({ ...task, assignee })
   }
 
+  /**
+   * Updates the task's due date
+   * @param {string} date - New due date in ISO format
+   */
   const handleDateChange = (date: string) => {
     onTaskUpdate({ ...task, dueDate: date })
   }
 
+  /**
+   * Adds a new label to the task
+   * @param {string} label - Label to add
+   */
   const handleAddLabel = (label: string) => {
     onTaskUpdate({ ...task, labels: [...(task.labels || []), label] })
   }
 
+  /**
+   * Removes a label from the task
+   * @param {string} label - Label to remove
+   */
   const handleRemoveLabel = (label: string) => {
     onTaskUpdate({ ...task, labels: (task.labels || []).filter(l => l !== label) })
   }
 
+  /**
+   * Adds a new dependency to the task
+   * @param {string} dependency - Task ID to add as dependency
+   */
   const handleAddDependency = (dependency: string) => {
     onTaskUpdate({ ...task, dependencies: [...(task.dependencies || []), dependency] })
   }
 
+  /**
+   * Removes a dependency from the task
+   * @param {string} dependency - Task ID to remove from dependencies
+   */
   const handleRemoveDependency = (dependency: string) => {
     onTaskUpdate({ 
       ...task, 
@@ -175,10 +246,10 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
         {/* Story Points */}
         <div className="property-section">
           <div className="property-label">Story Points</div>
-          <Select.Root value={task.storyPoints.toString()} onValueChange={handlePointsChange}>
+          <Select.Root value={task.storyPoints?.toString() || ''} onValueChange={handlePointsChange}>
             <Select.Trigger className="SelectTrigger">
               <Select.Value className="SelectValue">
-                <span>{task.storyPoints}</span>
+                <span>{task.storyPoints || 'Not set'}</span>
               </Select.Value>
               <Select.Icon className="SelectIcon">
                 <ChevronDown />

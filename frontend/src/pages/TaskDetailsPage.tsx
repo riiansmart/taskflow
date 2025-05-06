@@ -2,7 +2,7 @@
 
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Task } from '../types/Task';
+import { Task } from '../types/task.types';
 import { getTaskById } from '../services/taskService';
 import { useAuth } from '../hooks/useAuth';
 

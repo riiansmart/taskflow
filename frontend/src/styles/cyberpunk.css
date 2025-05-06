@@ -117,6 +117,7 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 2px;
     background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.7);

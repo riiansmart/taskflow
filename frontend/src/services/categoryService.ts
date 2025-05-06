@@ -1,7 +1,7 @@
 // getCategories()
 
 import api from './api';
-import { Category } from '../types/Category';
+import { Category } from '../types/category.types';
 
 // Fetch all available task categories
 export const getCategories = async (): Promise<Category[]> => {

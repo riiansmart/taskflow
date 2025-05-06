@@ -1,74 +1,61 @@
-// src/main.tsx
+/**
+ * main.tsx
+ * Entry point of the TaskFlow application.
+ * This file sets up the React application with all necessary providers and global styles.
+ * 
+ * Key Features:
+ * - React 18 concurrent rendering setup
+ * - Global style and theme management
+ * - Authentication state management
+ * - Date/time picker component styling
+ * - Custom cyberpunk theme integration
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+
+// Import required styles for the datetime picker component
+// These styles are essential for the proper rendering of date/time selection UI
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
-import './cyberpunk.css';
-import './index.css';
-import App from './App';
-import { BrowserRouter } from 'react-router-dom';
-import AuthProvider from './context/AuthProvider';
-import { ThemeProvider as CustomThemeProvider, useTheme } from './context/ThemeContext';
-import { ThemeProvider as MuiThemeProvider, createTheme, PaletteOptions } from '@mui/material/styles';
-import { useMemo } from 'react';
-import { CssBaseline } from '@mui/material';
 
-// Find the root element
+// Import custom application styles
+// cyberpunk.css: Custom theme with neon accents and dark mode aesthetics
+// index.css: Global application styles and utility classes
+import './styles/cyberpunk.css';
+import './styles/index.css';
+
+// Import custom context providers
+// ThemeProvider: Manages application-wide theme state (light/dark mode, colors)
+// AuthProvider: Handles user authentication state and token management
+// ThemedApp: Root component that applies current theme to the application
+import { ThemeProvider as CustomThemeProvider } from './context/ThemeContext';
+import AuthProvider from './context/AuthProvider';
+import { ThemedApp } from './components/ThemedApp';
+
+// Get the root DOM element where React will mount the application
+// Throws an error if the element is not found to fail fast
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
-// Create a root
+// Initialize React's concurrent rendering container
+// Uses createRoot for React 18's concurrent features
 const root = createRoot(rootElement);
 
-// Component to bridge Custom Theme context and configure MUI Theme
-function ThemedApp() {
-  const { isLightMode } = useTheme();
-
-  const muiTheme = useMemo(() => {
-    // Define palette based on your CSS variables
-    const palette: PaletteOptions = isLightMode
-      ? { // Light Mode Palette
-          mode: 'light',
-          primary: { main: '#36ff74' }, // --accent-primary (light)
-          secondary: { main: '#6affb0' }, // --accent-secondary (light)
-          background: {
-            default: '#ffffff', // --bg-primary (light)
-            paper: '#f6f8fb',   // --bg-secondary (light)
-          },
-          text: {
-            primary: '#101820',   // --text-primary (light)
-            secondary: '#505868', // --text-secondary (light)
-          },
-        }
-      : { // Dark Mode Palette (Cyberpunk)
-          mode: 'dark',
-          primary: { main: '#ff3a4c' }, // --accent-primary (dark)
-          secondary: { main: '#ff7080' }, // --accent-secondary (dark)
-          background: {
-            default: '#0a0a0f', // --bg-primary (dark)
-            paper: '#141420',   // --bg-secondary (dark)
-          },
-          text: {
-            primary: '#e0e0e0',   // --text-primary (dark)
-            secondary: '#9b9ba7', // --text-secondary (dark)
-          },
-        };
-
-    return createTheme({ palette });
-  }, [isLightMode]);
-
-  return (
-    <MuiThemeProvider theme={muiTheme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </MuiThemeProvider>
-  );
-}
-
-// Render app: CustomThemeProvider provides the toggle, ThemedApp consumes it for MUI
+/**
+ * Render the application with its provider hierarchy:
+ * 1. StrictMode - Enables additional development checks and warnings
+ * 2. CustomThemeProvider - Provides theme context for consistent styling
+ * 3. AuthProvider - Manages authentication state and user session
+ * 4. ThemedApp - Main application component with theme-aware rendering
+ * 
+ * Provider Order:
+ * - StrictMode wraps everything to catch potential issues
+ * - Theme provider is outermost to ensure theme context is always available
+ * - Auth provider is nested to potentially use theme context
+ * - ThemedApp consumes both theme and auth context
+ */
 root.render(
   <StrictMode>
     <CustomThemeProvider>

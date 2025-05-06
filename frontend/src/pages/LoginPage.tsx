@@ -1,10 +1,10 @@
 // src/pages/LoginPage.tsx
 import React, { useState } from 'react';
-import { Navbar } from '../components/Navbar';
+import { Navigation } from '../components/navigation/Navigation';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { loginUser } from '../services/authService';
 import { useAuth } from '../hooks/useAuth';
-import ErrorMessage from '../components/ErrorMessage';
+import { ErrorMessage } from '../components/ui/CommonComponents';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
+      <Navigation />
       <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
         <div className="auth-card">
           <div className="auth-header">
