@@ -4,6 +4,7 @@ import com.taskflow.backend.dto.ApiResponse;
 import com.taskflow.backend.dto.PageRequest;
 import com.taskflow.backend.model.Task;
 import com.taskflow.backend.dto.TaskRequest;
+import com.taskflow.backend.dto.TaskResponseDTO;
 import com.taskflow.backend.service.TaskService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class TaskController {
 
     // Get all tasks for the current user with pagination
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<Task>>> getAllTasks(
+    public ResponseEntity<ApiResponse<Page<TaskResponseDTO>>> getAllTasks(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String sort,
@@ -36,28 +37,28 @@ public class TaskController {
         pageRequest.setSearch(search);
         pageRequest.setFilter(filter);
         
-        Page<Task> tasks = taskService.getUserTasks(pageRequest);
+        Page<TaskResponseDTO> tasks = taskService.getUserTasks(pageRequest);
         return ResponseEntity.ok(ApiResponse.success(tasks));
     }
 
     // Get a specific task by ID
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Task>> getTask(@PathVariable Long id) {
-        Task task = taskService.getTaskById(id);
+    public ResponseEntity<ApiResponse<TaskResponseDTO>> getTask(@PathVariable Long id) {
+        TaskResponseDTO task = taskService.getTaskById(id);
         return ResponseEntity.ok(ApiResponse.success(task));
     }
 
     // Create a new task
     @PostMapping
-    public ResponseEntity<ApiResponse<Task>> createTask(@RequestBody TaskRequest request) {
-        Task createdTask = taskService.createTask(request);
+    public ResponseEntity<ApiResponse<TaskResponseDTO>> createTask(@RequestBody TaskRequest request) {
+        TaskResponseDTO createdTask = taskService.createTask(request);
         return ResponseEntity.ok(ApiResponse.success(createdTask, "Task created successfully"));
     }
 
     // Update an existing task
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Task>> updateTask(@PathVariable Long id, @RequestBody TaskRequest request) {
-        Task updatedTask = taskService.updateTask(id, request);
+    public ResponseEntity<ApiResponse<TaskResponseDTO>> updateTask(@PathVariable Long id, @RequestBody TaskRequest request) {
+        TaskResponseDTO updatedTask = taskService.updateTask(id, request);
         return ResponseEntity.ok(ApiResponse.success(updatedTask, "Task updated successfully"));
     }
 

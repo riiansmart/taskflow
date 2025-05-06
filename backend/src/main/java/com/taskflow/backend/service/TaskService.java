@@ -11,6 +11,8 @@ import com.taskflow.backend.model.Category;
 import com.taskflow.backend.exception.UnauthorizedException;
 import com.taskflow.backend.dto.TaskRequest;
 import com.taskflow.backend.model.Task.Priority;
+import com.taskflow.backend.dto.TaskResponseDTO;
+import com.taskflow.backend.mapper.TaskMapper;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TaskService {
@@ -26,11 +29,13 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final TaskMapper taskMapper;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, CategoryRepository categoryRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.taskMapper = taskMapper;
     }
 
     // Get the currently authenticated user from security context
@@ -44,7 +49,7 @@ public class TaskService {
         return null;
     }
 
-    public Page<Task> getUserTasks(com.taskflow.backend.dto.PageRequest pageRequest) {
+    public Page<TaskResponseDTO> getUserTasks(com.taskflow.backend.dto.PageRequest pageRequest) {
         Sort.Direction direction = Sort.Direction.fromString(pageRequest.getDirection().toUpperCase());
         Sort sort = pageRequest.getSort() != null ? 
             Sort.by(direction, pageRequest.getSort()) : 
@@ -53,26 +58,27 @@ public class TaskService {
         org.springframework.data.domain.PageRequest springPageRequest = 
             org.springframework.data.domain.PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
 
-        // TODO: Implement search and filter functionality
-        return taskRepository.findAll(springPageRequest);
+        Page<Task> tasks = taskRepository.findAll(springPageRequest);
+        return tasks.map(taskMapper::toResponse);
     }
 
-    public Task getTaskById(Long id) {
-        return taskRepository.findById(id)
+    public TaskResponseDTO getTaskById(Long id) {
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+        return taskMapper.toResponse(task);
     }
 
     @Transactional
-    public Task createTask(TaskRequest request) {
-        // Map DTO to entity
-        Task task = new Task();
-        task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
+    public TaskResponseDTO createTask(TaskRequest request) {
+        Optional<User> assigneeOpt = Optional.empty();
+        if (request.getAssigneeId() != null) {
+            assigneeOpt = userRepository.findById(request.getAssigneeId());
+        }
+        Task task = taskMapper.toEntity(request, assigneeOpt);
         // Set due date at start of day
         if (request.getDueDate() != null) {
             task.setDueDate(request.getDueDate().atStartOfDay());
         }
-        task.setPriority(Priority.valueOf(request.getPriority()));
         task.setCompleted(request.isCompleted());
         // Set the current authenticated user
         String email = getAuthenticatedUser();
@@ -86,36 +92,44 @@ public class TaskService {
                             "Category not found with id: " + request.getCategoryId()));
             task.setCategory(category);
         }
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        return taskMapper.toResponse(saved);
     }
 
     @Transactional
-    public Task updateTask(Long id, TaskRequest request) {
-        Task existingTask = getTaskById(id);
-        // Update basic fields
-        existingTask.setTitle(request.getTitle());
-        existingTask.setDescription(request.getDescription());
-        // Convert LocalDate to LocalDateTime at start of day
-        if (request.getDueDate() != null) {
-            existingTask.setDueDate(request.getDueDate().atStartOfDay());
+    public TaskResponseDTO updateTask(Long id, TaskRequest request) {
+        Task existingTask = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+        Optional<User> assigneeOpt = Optional.empty();
+        if (request.getAssigneeId() != null) {
+            assigneeOpt = userRepository.findById(request.getAssigneeId());
         }
-        existingTask.setPriority(Priority.valueOf(request.getPriority()));
-        existingTask.setCompleted(request.isCompleted());
+        Task updatedTask = taskMapper.toEntity(request, assigneeOpt);
+        updatedTask.setId(existingTask.getId());
+        updatedTask.setUser(existingTask.getUser());
+        updatedTask.setCreatedAt(existingTask.getCreatedAt());
+        // Set due date at start of day
+        if (request.getDueDate() != null) {
+            updatedTask.setDueDate(request.getDueDate().atStartOfDay());
+        }
+        updatedTask.setCompleted(request.isCompleted());
         // Update category association
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Category not found with id: " + request.getCategoryId()));
-            existingTask.setCategory(category);
+            updatedTask.setCategory(category);
         } else {
-            existingTask.setCategory(null);
+            updatedTask.setCategory(null);
         }
-        return taskRepository.save(existingTask);
+        Task saved = taskRepository.save(updatedTask);
+        return taskMapper.toResponse(saved);
     }
 
     @Transactional
     public void deleteTask(Long id) {
-        Task task = getTaskById(id);
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
         taskRepository.delete(task);
     }
 

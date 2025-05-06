@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -24,8 +25,23 @@ public class Task {
 
     private boolean completed = false;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column
+    private String status;
+
+    @Column
+    private String type;
+
+    @Column
+    private Integer storyPoints;
+
+    @ElementCollection
+    private List<String> labels;
+
+    @ElementCollection
+    private List<Long> dependencies;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -34,6 +50,21 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne
+    @JoinColumn(name = "assignee_id")
+    private User assignee;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
