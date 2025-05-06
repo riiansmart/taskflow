@@ -85,3 +85,7 @@ pids
 
 # Prisma
 generated/
+
+# Cursor files
+.cursor/
+*.cursor
