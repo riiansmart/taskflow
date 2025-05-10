@@ -1390,3 +1390,8 @@ body::before {
 .light-mode .wmde-markdown ol li::marker {
   color: var(--text-secondary) !important;
 }
+
+.hero-message {
+    margin-top: 1.25rem;
+    display: block;
+}

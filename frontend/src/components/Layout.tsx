@@ -20,7 +20,7 @@ import '../styles/components/Layout.css'  // Layout-specific styles
  */
 export function Layout() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 text-gray-300">
+    <div className="min-h-screen flex flex-col">
       {/* Top navigation bar */}
       <Navigation />
       
