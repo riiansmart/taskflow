@@ -166,7 +166,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <>
+    <div className="container">
       {/* Welcome Section */}
       <section className="welcome-section">
         <h1 className="welcome-text">Welcome back</h1>
@@ -411,7 +411,7 @@ const DashboardPage = () => {
           <i className="fas fa-plus"></i>
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
