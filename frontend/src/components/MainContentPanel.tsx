@@ -93,32 +93,33 @@ export function MainContentPanel({
     <div className="main-content">
       {/* Tab Bar - Displays open tasks */}
       <div className="tabs-bar">
-        {openTasks.length === 0 && (
-          <div className="p-2 px-4 text-gray-500 italic text-sm">No tasks open</div>
-        )}
-        {openTasks.map(task => (
-          <div 
-            key={task.id}
-            onClick={() => onTabSelect(task.id)}
-            className={`tab ${task.id === activeTaskId ? 'active' : ''}`}
-            role="tab"
-            aria-selected={task.id === activeTaskId}
-          >
-            <FileText className="mr-2 flex-shrink-0" size={14}/> 
-            <span className="mr-3">{task.title}</span>
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation()
-                onCloseTab(task.id)
-              }}
-              className="ml-1 p-0.5 rounded hover:bg-secondary"
-              aria-label={`Close tab ${task.title}`}
-              title="Close tab"
+        {openTasks.length === 0 ? (
+          <div className="px-4 py-2 text-muted text-sm italic">No tasks open</div>
+        ) : (
+          openTasks.map(task => (
+            <div 
+              key={task.id}
+              onClick={() => onTabSelect(task.id)}
+              className={`tab ${task.id === activeTaskId ? 'active' : ''}`}
+              role="tab"
+              aria-selected={task.id === activeTaskId}
+              tabIndex={0}
             >
-              <X size={14} />
-            </button>
-          </div>
-        ))}
+              <FileText className="flex-shrink-0 mr-2" size={14} /> 
+              <span className="truncate max-w-[200px]">{task.title}</span>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation()
+                  onCloseTab(task.id)
+                }}
+                className="ml-2 p-1 rounded-sm hover:bg-secondary"
+                aria-label={`Close ${task.title}`}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Task Detail Area */}
@@ -127,12 +128,18 @@ export function MainContentPanel({
           <div className="max-w-4xl mx-auto px-4 py-6">
             {/* Task Header - ID, Status, Priority */}
             <div className="task-header mb-8">
-              <div className="task-badges mb-4">
-                <span className="task-badge id">{activeTask.id}</span>
-                <span className={`task-badge status status-${activeTask.status}`}>
-                  {activeTask.status.replace('-', ' ')}
+              <div className="task-badges flex items-center gap-3 mb-4">
+                <span className="task-badge id px-2.5 py-1.5 bg-secondary/50 text-muted rounded-md text-sm font-mono">
+                  {activeTask.id}
                 </span>
-                <span className={`task-badge priority priority-${activeTask.priority}`}>
+                <span className="task-badge status px-2.5 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 bg-secondary/50">
+                  <span className={`status-indicator status-${activeTask.status} w-2 h-2 rounded-full`} />
+                  <span className={`text-${activeTask.status.toLowerCase().replace('_', '-')}`}>
+                    {activeTask.status.replace('_', ' ')}
+                  </span>
+                </span>
+                <span className={`task-badge priority px-2.5 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 bg-secondary/50 text-${activeTask.priority.toLowerCase()}`}>
+                  <span className={`w-2 h-2 rounded-full bg-${activeTask.priority.toLowerCase()}`} />
                   {activeTask.priority}
                 </span>
               </div>

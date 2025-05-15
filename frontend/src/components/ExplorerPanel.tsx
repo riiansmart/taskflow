@@ -7,18 +7,20 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'  // Icons for expand/collapse
 import * as Collapsible from '@radix-ui/react-collapsible'  // Accessible collapsible UI
 import { useState } from 'react'
-import { Task } from '../types/task.types'  // Task type definitions
+import { Task, Category, TaskStatus } from '../types/task.types'  // Task type definitions
 import '../styles/taskflow-dashboard.css'   // Component styles
 
 /**
  * Props for the ExplorerPanel component
  * @interface ExplorerPanelProps
  * @property {Task[]} tasks - Array of all tasks to display
+ * @property {Category[]} categories - Array of available categories
  * @property {string | null} activeTaskId - ID of currently selected task
  * @property {function} onTaskSelect - Callback when a task is selected
  */
 interface ExplorerPanelProps {
   tasks: Task[]
+  categories: Category[]
   activeTaskId: string | null
   onTaskSelect: (taskId: string) => void
 }
@@ -48,7 +50,7 @@ interface TaskGroup {
  * @param {ExplorerPanelProps} props - Component props
  * @returns {JSX.Element} The explorer panel component
  */
-export function ExplorerPanel({ tasks, activeTaskId, onTaskSelect }: ExplorerPanelProps) {
+export function ExplorerPanel({ tasks, categories, activeTaskId, onTaskSelect }: ExplorerPanelProps) {
   // Track which sections are expanded
   const [openSections, setOpenSections] = useState<string[]>(['current-sprint'])
   
@@ -60,12 +62,12 @@ export function ExplorerPanel({ tasks, activeTaskId, onTaskSelect }: ExplorerPan
     {
       id: 'current-sprint',
       title: 'Current Sprint (May 5-19)',
-      tasks: tasks.filter(task => task.status === 'in-progress' || task.status === 'review')
+      tasks: tasks.filter(task => task.status === TaskStatus.IN_PROGRESS || task.status === TaskStatus.REVIEW)
     },
     {
       id: 'backlog',
       title: 'Backlog',
-      tasks: tasks.filter(task => task.status === 'todo')
+      tasks: tasks.filter(task => task.status === TaskStatus.TODO)
     }
   ]
 
@@ -82,62 +84,87 @@ export function ExplorerPanel({ tasks, activeTaskId, onTaskSelect }: ExplorerPan
   }
 
   return (
-    <div className="explorer-panel">
+    <div className="explorer-panel bg-secondary border-r border-default">
       {/* Panel Header */}
-      <div className="explorer-header">Explorer</div>
+      <div className="explorer-header bg-tertiary px-4 py-3 font-semibold text-sm text-primary border-b border-default flex items-center justify-between">
+        <span>Explorer</span>
+      </div>
       
       {/* Task Groups */}
-      {taskGroups.map(group => (
-        <Collapsible.Root
-          key={group.id}
-          open={openSections.includes(group.id)}
-          onOpenChange={() => toggleSection(group.id)}
-          className="task-group"
-        >
-          {/* Group Header with Expand/Collapse Control */}
-          <Collapsible.Trigger className="task-group-header">
-            {openSections.includes(group.id) ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-            <span>{group.title}</span>
-          </Collapsible.Trigger>
-          
-          {/* Group Content - Task List */}
-          <Collapsible.Content>
-            <div className="space-y-1">
-              {group.tasks.map(task => (
-                <div
-                  key={task.id}
-                  onClick={() => onTaskSelect(task.id)}
-                  className={`task-item ${task.id === activeTaskId ? 'active' : ''}`}
-                >
-                  {/* Task Status Indicator */}
-                  <div className={`task-item-status ${task.status}`} />
-                  
-                  {/* Task Title with ID */}
-                  <span className="flex-1 truncate">{task.id}: {task.title}</span>
-                  
-                  {/* Task Labels (if any) */}
-                  {task.labels && task.labels.length > 0 && (
-                    <div className="task-item-labels">
-                      {task.labels.map(label => (
-                        <span 
-                          key={label}
-                          className={`task-item-label ${label}`}
-                        >
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Collapsible.Content>
-        </Collapsible.Root>
-      ))}
+      <div className="p-2">
+        {taskGroups.map(group => (
+          <Collapsible.Root
+            key={group.id}
+            open={openSections.includes(group.id)}
+            onOpenChange={() => toggleSection(group.id)}
+            className="task-group mb-2"
+          >
+            {/* Group Header with Expand/Collapse Control */}
+            <Collapsible.Trigger className="task-group-header w-full flex items-center gap-1 px-2 py-1.5 text-sm text-secondary hover:text-primary rounded transition-colors duration-150">
+              {openSections.includes(group.id) ? (
+                <ChevronDown className="w-4 h-4 flex-shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 flex-shrink-0" />
+              )}
+              <span className="font-medium">{group.title}</span>
+            </Collapsible.Trigger>
+            
+            {/* Group Content - Task List */}
+            <Collapsible.Content>
+              <div className="pl-6 mt-1 space-y-1">
+                {group.tasks.map(task => (
+                  <div
+                    key={task.id}
+                    onClick={() => onTaskSelect(task.id)}
+                    className={`task-item group flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm
+                      ${task.id === activeTaskId 
+                        ? 'bg-accent text-white' 
+                        : 'text-secondary hover:text-primary hover:bg-hover'}`}
+                  >
+                    {/* Task Status Indicator */}
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(task.status)}`} />
+                    
+                    {/* Task Title with ID */}
+                    <span className="flex-1 truncate">
+                      <span className="font-mono text-xs opacity-70">{task.id}:</span> {task.title}
+                    </span>
+                    
+                    {/* Task Labels */}
+                    {task.labels && task.labels.length > 0 && (
+                      <div className="task-item-labels hidden group-hover:flex gap-1">
+                        {task.labels.map(label => (
+                          <span 
+                            key={label}
+                            className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-secondary/50"
+                          >
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Collapsible.Content>
+          </Collapsible.Root>
+        ))}
+      </div>
     </div>
   )
+}
+
+// Helper function to get status color classes
+function getStatusColor(status: TaskStatus): string {
+  switch (status) {
+    case TaskStatus.TODO:
+      return 'bg-gray-400'
+    case TaskStatus.IN_PROGRESS:
+      return 'bg-blue-500'
+    case TaskStatus.REVIEW:
+      return 'bg-purple-500'
+    case TaskStatus.DONE:
+      return 'bg-green-500'
+    default:
+      return 'bg-gray-400'
+  }
 } 

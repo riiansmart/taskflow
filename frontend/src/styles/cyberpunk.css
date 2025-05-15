@@ -37,8 +37,8 @@
     --bg-secondary: #f6f8fb;
     --text-primary: #101820;
     --text-secondary: #505868;
-    --accent-primary: #2ecc71;
-    --accent-secondary: #48c78e;
+    --accent-primary: #239653;
+    --accent-secondary: #27a56c;
     --border-color: #e0e8f0;
     --shadow: 0 0 15px rgba(46, 204, 113, 0.2);
     --accent-primary-rgb: 46, 204, 113;
@@ -162,49 +162,7 @@ body::before {
     color: var(--accent-primary);
 }
 
-.theme-toggle {
-    width: 44px;
-    height: 20px;
-    background-color: var(--bg-secondary);
-    border-radius: 10px;
-    position: relative;
-    cursor: pointer;
-    border: none;
-    overflow: hidden; /* ensures knob glow doesn't spill */
-    transition: background-color 0.3s ease;
-    /* subtle inner shadow for track */
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
-}
-
-/* Give filled track when light mode (as "on" state) */
-.light-mode .theme-toggle {
-    background-color: rgba(var(--accent-primary-rgb), 0.4);
-    box-shadow: inset 0 0 6px rgba(var(--accent-primary-rgb), 0.6);
-}
-
-.theme-toggle::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background-color: var(--accent-primary);
-    box-shadow: 0 0 4px rgba(var(--accent-primary-rgb),0.6);
-    transition: transform 0.3s ease;
-}
-
-/* Knob color switch for light mode for contrast */
-.light-mode .theme-toggle::before {
-    background-color: var(--bg-primary);
-    transform: translateX(24px);
-    box-shadow: 0 0 4px rgba(var(--border-color),0.4);
-}
-
-.theme-toggle:hover::before {
-    box-shadow: 0 0 6px rgba(var(--accent-primary-rgb), 0.6);
-}
+/* Theme toggle styles moved to Navigation.css */
 
 .welcome-section {
     margin-bottom: 2rem;
@@ -871,13 +829,20 @@ body::before {
 }
 
 .auth-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
   text-align: center;
 }
 
-.auth-header .welcome-description {
-    margin-top: 1rem;
-    margin-bottom: 2rem;
+.auth-header h1.logo {
+  margin-bottom: 1rem;
+}
+
+.auth-header .description {
+  color: var(--text-secondary);
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 600;
 }
 
 .auth-tabs {
@@ -886,6 +851,7 @@ body::before {
   gap: 1rem;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
 }
 
 .auth-tab {
@@ -1279,7 +1245,7 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #2ecc71; /* Green */
+  background-color: #1cca90; /* Green */
   color: #ffffff;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -1292,7 +1258,7 @@ body::before {
 }
 
 .github-button:hover {
-  background-color: #28b463; /* Slightly darker green */
+  background-color: #0aad5c; /* Slightly darker green */
   transform: translateY(-2px);
   box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
 }
@@ -1391,7 +1357,165 @@ body::before {
   color: var(--text-secondary) !important;
 }
 
+/* Menu Bar Styles */
+.menu-bar {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+}
+
+.menu-bar button {
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.menu-bar button:hover {
+  background-color: var(--bg-hover);
+}
+
+.menu-item {
+  position: relative;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  min-width: 200px;
+  z-index: 1000;
+}
+
+.menu-dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.menu-dropdown-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--accent-primary);
+}
+
+.menu-separator {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.25rem 0;
+}
+
+/* Panel Layout Styles */
+.dashboard-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Panel specific styles */
+.panel {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border: none;
+}
+
+/* Panel resize handle - VS Code style */
+.panel-resize-handle {
+  width: 1px !important;
+  background-color: var(--border-color);
+  position: relative;
+  cursor: col-resize;
+  transition: background-color 0.2s;
+}
+
+.panel-resize-handle:hover,
+.panel-resize-handle:active {
+  background-color: var(--accent-primary);
+}
+
+/* Add hover effect area around the resize handle */
+.panel-resize-handle::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.panel-content {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+  background-color: var(--bg-primary);
+}
+
+/* Timeline panel styles */
+.timeline-panel {
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-resizer {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: ns-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+.timeline-resizer:hover {
+  background-color: var(--accent-primary);
+  opacity: 0.5;
+}
+
+.timeline-content {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--bg-primary);
+}
+
+.timeline-container {
+  height: 12rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Status bar styles */
+.status-bar {
+  height: 24px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+/* Hero Message styles */
 .hero-message {
-    margin-top: 1.25rem;
-    display: block;
+  margin-top: 1.25rem;
+  display: block;
 }

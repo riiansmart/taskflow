@@ -9,12 +9,35 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--accent-primary)',
-        secondary: 'var(--accent-secondary)',
-        background: 'var(--bg-primary)',
-        'background-secondary': 'var(--bg-secondary)',
-        text: 'var(--text-primary)',
-        'text-secondary': 'var(--text-secondary)',
+        primary: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        muted: 'var(--text-secondary)',
+        accent: 'var(--accent-primary)',
+        hover: 'var(--bg-hover)',
+        default: 'var(--border-color)',
+      },
+      borderColor: {
+        DEFAULT: 'var(--border-color)',
+        default: 'var(--border-color)',
+      },
+      backgroundColor: {
+        primary: 'var(--bg-primary)',
+        secondary: 'var(--bg-secondary)',
+        hover: 'var(--bg-hover)',
+      },
+      textColor: {
+        primary: 'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+        muted: 'var(--text-secondary)',
+      },
+      animation: {
+        'in': 'in 0.2s ease-out',
+      },
+      keyframes: {
+        in: {
+          '0%': { opacity: 0, transform: 'translateY(-4px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
       },
     },
   },
