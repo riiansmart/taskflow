@@ -6,6 +6,7 @@
 export enum TaskStatus {
   TODO = 'TODO',
   IN_PROGRESS = 'IN_PROGRESS',
+  REVIEW = 'REVIEW',
   DONE = 'DONE'
 }
 
@@ -27,4 +28,25 @@ export interface Task {
   categoryId?: number
   createdAt?: string
   updatedAt?: string
+  storyPoints?: number
+  assignee?: string
+  labels?: string[]
+  dependencies?: string[]
+}
+
+export interface Category {
+  id: number
+  name: string
+  description?: string
+  color?: string
+  createdAt?: string
+  updatedAt?: string
+  userId?: number
+}
+
+export interface User {
+  id: number
+  name: string
+  email: string
+  avatar?: string
 }

@@ -5,7 +5,7 @@
  */
 
 import { format, addDays, subDays } from 'date-fns'
-import { Task } from '../types/task.types'
+import { Task, TaskStatus } from '../types/task.types'
 import { ChevronDown, Clock, Maximize2, Minimize2, X } from 'lucide-react'
 import { useRef, useState, useEffect, useCallback } from 'react'
 
@@ -45,11 +45,11 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
   const startHeightRef = useRef<number>(0)
   const startYRef = useRef<number>(0)
 
-  const statusColors: Record<Task['status'], string> = {
-    'todo': 'var(--status-todo)',
-    'in-progress': 'var(--status-in-progress)',
-    'review': 'var(--status-review)',
-    'done': 'var(--status-done)'
+  const statusColors: Record<TaskStatus, string> = {
+    [TaskStatus.TODO]: 'var(--status-todo)',
+    [TaskStatus.IN_PROGRESS]: 'var(--status-in-progress)',
+    [TaskStatus.REVIEW]: 'var(--status-review)',
+    [TaskStatus.DONE]: 'var(--status-done)'
   }
 
   // Generate dates array (14 days, 7 days before and after today)
@@ -60,11 +60,11 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
   // Convert tasks to timeline format
   const timelineTasks = tasks.map(task => ({
     ...task,
-    startDate: new Date(task.createdAt),
+    startDate: new Date(task.createdAt || ''),
     endDate: new Date(task.dueDate),
-    progress: task.status === 'done' ? 100 : 
-             task.status === 'review' ? 80 :
-             task.status === 'in-progress' ? 50 : 0
+    progress: task.status === TaskStatus.DONE ? 100 : 
+             task.status === TaskStatus.REVIEW ? 80 :
+             task.status === TaskStatus.IN_PROGRESS ? 50 : 0
   }))
 
   // Handle panel resizing
@@ -123,16 +123,11 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
   return (
     <div 
       ref={panelRef}
-      className={`timeline-panel border-t border-default bg-primary 
+      className={`timeline-panel
         ${isClosing ? 'closing' : ''} 
         ${isCollapsed ? 'collapsed' : ''} 
         ${isFullscreen ? 'fullscreen' : ''}`}
     >
-      <div 
-        className={`timeline-resizer ${isResizing ? 'resizing' : ''} border-t-2 border-default cursor-ns-resize`}
-        onMouseDown={handleMouseDown}
-      />
-      
       {/* Timeline Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-default bg-secondary">
         <div 
@@ -152,7 +147,7 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
               toggleFullscreen()
               onMaximize?.()
             }}
-            className="p-1 text-primary hover:bg-secondary rounded"
+            className="p-1 text-primary hover:bg-hover rounded"
             title={isFullscreen ? "Exit full screen" : "Enter full screen"}
           >
             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -160,7 +155,7 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
           {onClose && (
             <button
               onClick={handleClose}
-              className="p-1 text-primary hover:bg-secondary rounded"
+              className="p-1 text-primary hover:bg-hover rounded"
               title="Close timeline"
             >
               <X size={14} />
@@ -170,17 +165,17 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
       </div>
 
       {/* Timeline Content */}
-      <div className="timeline-content h-48 overflow-auto">
+      <div className="timeline-content">
         <div className="min-w-[800px]">
           {/* Timeline Header - Dates */}
           <div className="flex border-b border-default sticky top-0 bg-primary z-10">
-            <div className="w-48 flex-shrink-0 p-2" />
+            <div className="w-48 flex-shrink-0 p-2 border-r border-default" />
             {dates.map((date, i) => (
               <div
                 key={i}
                 className={`w-24 flex-shrink-0 p-2 text-center text-xs ${
                   format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
-                    ? 'text-primary'
+                    ? 'text-accent'
                     : 'text-secondary'
                 }`}
               >
@@ -193,46 +188,42 @@ export function TimelinePanel({ tasks, onClose, onMaximize }: TimelinePanelProps
           {timelineTasks.map((task, index) => (
             <div
               key={task.id}
-              className={`flex ${
-                index % 2 === 0 ? 'bg-secondary' : 'bg-primary'
-              } hover:bg-secondary`}
+              className={`flex border-b border-default
+                ${index % 2 === 0 ? 'bg-secondary' : 'bg-primary'} 
+                hover:bg-hover`}
             >
-              <div className="w-48 flex-shrink-0 p-2 border-r border-default text-xs text-primary">
-                {task.title}
+              <div className="w-48 flex-shrink-0 p-2 border-r border-default">
+                <div className="text-xs font-medium truncate">{task.title}</div>
               </div>
-              <div className="flex-grow relative h-8">
+              <div className="flex-1 relative p-2">
                 <div
-                  className="absolute h-5 top-1.5 rounded"
+                  className="absolute h-4 rounded"
                   style={{
+                    left: `${getTaskOffset(task.startDate, dates) * 100}%`,
+                    width: `${getTaskDuration(task.startDate, task.endDate) * 100}%`,
                     backgroundColor: statusColors[task.status],
-                    left: `${getTaskOffset(task.startDate, dates)}px`,
-                    width: `${getTaskDuration(task.startDate, task.endDate)}px`,
-                    opacity: 0.8
+                    opacity: 0.3
                   }}
-                >
-                  <div 
-                    className="h-full relative overflow-hidden"
-                    title={`${task.progress}% complete`}
-                  >
-                    <div 
-                      className="absolute inset-0 bg-white bg-opacity-20"
-                      style={{ width: `${task.progress}%` }}
-                    />
-                  </div>
-                </div>
+                />
+                <div
+                  className="absolute h-4 rounded"
+                  style={{
+                    left: `${getTaskOffset(task.startDate, dates) * 100}%`,
+                    width: `${(getTaskDuration(task.startDate, task.endDate) * task.progress) / 100 * 100}%`,
+                    backgroundColor: statusColors[task.status]
+                  }}
+                />
               </div>
             </div>
           ))}
         </div>
-
-        {/* Today Indicator */}
-        <div
-          className="absolute top-0 bottom-0 w-px bg-accent z-20"
-          style={{
-            left: `${getTodayOffset(dates)}px`
-          }}
-        />
       </div>
+
+      {/* Resize Handle */}
+      <div 
+        className="timeline-resizer"
+        onMouseDown={handleMouseDown}
+      />
     </div>
   )
 }

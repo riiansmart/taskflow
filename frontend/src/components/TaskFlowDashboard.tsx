@@ -10,125 +10,18 @@ import { ExplorerPanel } from './ExplorerPanel'        // Task explorer/navigati
 import { MainContentPanel } from './MainContentPanel'  // Main task content display
 import { TimelinePanel } from './TimelinePanel'        // Timeline visualization
 import { PropertiesPanel } from './PropertiesPanel'    // Task properties editor
-import { Task, TaskStatus, TaskPriority } from '../types/task.types'  // Task-related types
+import { Task } from '../types/task.types'  // Task-related types
 import { Clock } from 'lucide-react'                   // Icon components
+import { MenuBar } from './MenuBar'
+import { mockTasks, mockCategories, mockUsers } from '../data/mockData'
 
-/**
- * Sample task data for demonstration purposes
- * Each task includes:
- * - Unique identifier
- * - Title and description
- * - Type and priority
- * - Status and assignee
- * - Due date and story points
- * - Creation and update timestamps
- */
-const initialTasks: Task[] = [
-  {
-    id: 'TASK-001',
-    title: 'Setup Project Infrastructure',
-    type: 'feature',
-    status: TaskStatus.DONE,
-    priority: TaskPriority.HIGH,
-    dueDate: '2024-03-20',
-    assignee: 'Sarah Chen',
-    storyPoints: 5,
-    description: 'Initialize project with React, Vite, and TailwindCSS. Set up development environment and CI/CD pipeline.',
-    createdAt: '2024-03-15T08:00:00.000Z',
-    updatedAt: '2024-03-20T16:30:00.000Z'
-  },
-  {
-    id: 'TASK-002',
-    title: 'Design System Implementation',
-    type: 'feature',
-    status: TaskStatus.IN_PROGRESS,
-    priority: TaskPriority.HIGH,
-    dueDate: '2024-03-25',
-    assignee: 'Michael Torres',
-    storyPoints: 8,
-    description: 'Create reusable components following VSCode design patterns. Implement dark theme support.',
-    createdAt: '2024-03-18T09:15:00.000Z',
-    updatedAt: '2024-03-21T14:20:00.000Z'
-  },
-  {
-    id: 'TASK-003',
-    title: 'Task Management API',
-    type: 'feature',
-    status: TaskStatus.REVIEW,
-    priority: TaskPriority.MEDIUM,
-    dueDate: '2024-03-23',
-    assignee: 'Alex Johnson',
-    storyPoints: 5,
-    description: 'Implement REST API endpoints for task CRUD operations with proper validation and error handling.',
-    createdAt: '2024-03-17T10:30:00.000Z',
-    updatedAt: '2024-03-21T11:45:00.000Z'
-  },
-  {
-    id: 'TASK-004',
-    title: 'Timeline Component',
-    type: 'feature',
-    status: TaskStatus.IN_PROGRESS,
-    priority: TaskPriority.MEDIUM,
-    dueDate: '2024-03-24',
-    assignee: 'Emily White',
-    storyPoints: 3,
-    description: 'Create interactive timeline view for task visualization with drag-and-drop support.',
-    createdAt: '2024-03-19T13:20:00.000Z',
-    updatedAt: '2024-03-21T09:15:00.000Z'
-  },
-  {
-    id: 'TASK-005',
-    title: 'User Authentication',
-    type: 'feature',
-    status: TaskStatus.TODO,
-    priority: TaskPriority.HIGH,
-    dueDate: '2024-03-27',
-    assignee: 'David Kim',
-    storyPoints: 5,
-    description: 'Implement user authentication and authorization using JWT tokens.',
-    createdAt: '2024-03-20T11:00:00.000Z',
-    updatedAt: '2024-03-21T11:00:00.000Z'
-  },
-  {
-    id: 'TASK-006',
-    title: 'Data Persistence Layer',
-    type: 'feature',
-    status: TaskStatus.REVIEW,
-    priority: TaskPriority.HIGH,
-    dueDate: '2024-03-22',
-    assignee: 'Lisa Anderson',
-    storyPoints: 5,
-    description: 'Set up database schema and implement data access layer with TypeORM.',
-    createdAt: '2024-03-16T14:30:00.000Z',
-    updatedAt: '2024-03-21T10:20:00.000Z'
-  },
-  {
-    id: 'TASK-007',
-    title: 'Performance Optimization',
-    type: 'improvement',
-    status: TaskStatus.TODO,
-    priority: TaskPriority.LOW,
-    dueDate: '2024-03-28',
-    assignee: 'Ryan Martinez',
-    storyPoints: 3,
-    description: 'Optimize application performance and implement lazy loading for better user experience.',
-    createdAt: '2024-03-21T09:00:00.000Z',
-    updatedAt: '2024-03-21T09:00:00.000Z'
-  },
-  {
-    id: 'TASK-008',
-    title: 'Automated Testing Suite',
-    type: 'feature',
-    status: TaskStatus.TODO,
-    priority: TaskPriority.MEDIUM,
-    dueDate: '2024-03-26',
-    assignee: 'Rachel Thompson',
-    storyPoints: 5,
-    description: 'Set up testing infrastructure and write unit tests for core components.',
-    createdAt: '2024-03-20T15:45:00.000Z',
-    updatedAt: '2024-03-21T15:45:00.000Z'
-  }
-]
+interface PanelConfig {
+  id: string;
+  component: string;
+  visible: boolean;
+  position: 'left' | 'right' | 'bottom';
+  size: number;
+}
 
 /**
  * TaskFlowDashboard Component
@@ -148,10 +41,17 @@ const initialTasks: Task[] = [
  */
 export function TaskFlowDashboard() {
   // State Management
-  const [tasks, setTasks] = useState<Task[]>(initialTasks)           // All available tasks
+  const [tasks, setTasks] = useState<Task[]>(mockTasks)           // All available tasks
   const [openTasks, setOpenTasks] = useState<Task[]>([])            // Currently open tasks
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)  // Selected task
   const [isTimelineVisible, setIsTimelineVisible] = useState(true)   // Timeline visibility
+
+  // New state for panel management
+  const [panels, setPanels] = useState<PanelConfig[]>([
+    { id: 'explorer', component: 'ExplorerPanel', visible: true, position: 'left', size: 20 },
+    { id: 'properties', component: 'PropertiesPanel', visible: true, position: 'right', size: 20 },
+    { id: 'timeline', component: 'TimelinePanel', visible: true, position: 'bottom', size: 30 }
+  ]);
 
   /**
    * Handles task selection from the explorer panel
@@ -211,28 +111,52 @@ export function TaskFlowDashboard() {
     setIsTimelineVisible(prev => !prev)
   }
 
+  const handleViewChange = (panelId: string) => {
+    setPanels(prev => prev.map(panel => 
+      panel.id === panelId ? { ...panel, visible: !panel.visible } : panel
+    ));
+  };
+
+  const handlePanelResize = (panelId: string, newSize: number) => {
+    setPanels(prev => prev.map(panel =>
+      panel.id === panelId ? { ...panel, size: newSize } : panel
+    ));
+  };
+
   // Get the currently active task object
   const activeTask = tasks.find(t => t.id === activeTaskId)
 
+  // Filter panels by position
+  const leftPanels = panels.filter(p => p.visible && p.position === 'left');
+  const rightPanels = panels.filter(p => p.visible && p.position === 'right');
+  const bottomPanels = panels.filter(p => p.visible && p.position === 'bottom');
+
   return (
-    <div className="dashboard-container h-full flex flex-col">
-      <div className="dashboard-content flex-1 flex">
-        <div className="dashboard-panels flex-1">
-          {/* Horizontal Panel Group for Main Layout */}
-          <PanelGroup direction="horizontal">
-            {/* Left Panel: Task Explorer */}
-            <Panel defaultSize={20} minSize={15} maxSize={30}>
+    <div className="dashboard-container">
+      <MenuBar 
+        onViewChange={handleViewChange}
+        onTimelineToggle={toggleTimeline}
+      />
+      
+      <div className="flex-1 flex overflow-hidden">
+        <PanelGroup direction="horizontal" className="flex-1">
+          {/* Explorer Panel */}
+          <Panel defaultSize={20} minSize={15} maxSize={30}>
+            <div className="panel">
               <ExplorerPanel 
                 tasks={tasks}
+                categories={mockCategories}
                 onTaskSelect={handleTaskSelect}
                 activeTaskId={activeTaskId}
               />
-            </Panel>
-            
-            <PanelResizeHandle className="w-1 bg-secondary hover:bg-accent transition-colors" />
-            
-            {/* Center Panel: Main Content */}
-            <Panel defaultSize={60}>
+            </div>
+          </Panel>
+
+          <PanelResizeHandle className="panel-resize-handle" />
+
+          {/* Main Content Panel */}
+          <Panel defaultSize={60} minSize={30}>
+            <div className="panel-content">
               <MainContentPanel 
                 openTasks={openTasks}
                 activeTaskId={activeTaskId}
@@ -240,43 +164,48 @@ export function TaskFlowDashboard() {
                 onCloseTab={handleCloseTab}
                 onTaskUpdate={handleTaskUpdate}
               />
-            </Panel>
-            
-            <PanelResizeHandle className="w-1 bg-secondary hover:bg-accent transition-colors" />
-            
-            {/* Right Panel: Task Properties */}
-            <Panel defaultSize={20} minSize={15} maxSize={30}>
+            </div>
+          </Panel>
+
+          <PanelResizeHandle className="panel-resize-handle" />
+
+          {/* Properties Panel */}
+          <Panel defaultSize={20} minSize={15} maxSize={30}>
+            <div className="panel">
               <PropertiesPanel 
                 task={activeTask}
+                categories={mockCategories}
+                users={mockUsers}
                 onTaskUpdate={handleTaskUpdate}
               />
-            </Panel>
-          </PanelGroup>
-        </div>
+            </div>
+          </Panel>
+        </PanelGroup>
+      </div>
 
-        {/* Bottom Panel: Timeline (Optional) */}
-        {isTimelineVisible && (
+      {/* Timeline Panel */}
+      {isTimelineVisible && (
+        <div className="timeline-container">
           <TimelinePanel 
             tasks={tasks}
-            onClose={toggleTimeline}
+            onClose={() => setIsTimelineVisible(false)}
             onMaximize={() => {
               // TODO: Implement maximize functionality
               console.log('Maximize timeline')
             }}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Status Bar */}
-      <div className="status-bar flex items-center h-6 bg-primary border-t border-default px-2">
-        <div 
-          className="status-bar-item flex items-center gap-1 text-xs text-primary hover:text-accent cursor-pointer px-2 py-1"
-          onClick={toggleTimeline}
-          title={isTimelineVisible ? "Hide Timeline" : "Show Timeline"}
+      <div className="status-bar">
+        <button 
+          className="flex items-center gap-1 text-xs hover:text-accent px-2 py-1"
+          onClick={() => setIsTimelineVisible(!isTimelineVisible)}
         >
           <Clock size={14} />
           <span>Timeline</span>
-        </div>
+        </button>
       </div>
     </div>
   )

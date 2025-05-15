@@ -6,7 +6,7 @@
 
 import * as Select from '@radix-ui/react-select'
 import { ChevronDown, Plus, X } from 'lucide-react'
-import { Task, TaskPriority, TaskStatus } from '../types/task.types'
+import { Task, TaskPriority, TaskStatus, Category, User } from '../types/task.types'
 import '../styles/dropdown.css'
 import '../styles/properties-panel.css'
 
@@ -14,21 +14,16 @@ import '../styles/properties-panel.css'
  * Props for the PropertiesPanel component
  * @interface PropertiesPanelProps
  * @property {Task | undefined} task - The task to edit, undefined if no task is selected
+ * @property {Category[]} categories - Available categories for task organization
+ * @property {User[]} users - Available users for task assignment
  * @property {function} onTaskUpdate - Callback when task properties are updated
  */
 interface PropertiesPanelProps {
   task: Task | undefined
+  categories: Category[]
+  users: User[]
   onTaskUpdate: (task: Task) => void
 }
-
-/**
- * Mock user data for assignee selection
- * In a real application, this would come from an API or database
- */
-const users = [
-  { id: '1', name: 'Alex Kim' },
-  { id: '2', name: 'Morgan Smith' }
-]
 
 // Available options for task properties
 const priorities = Object.values(TaskPriority)
@@ -52,7 +47,7 @@ const points = [1, 2, 3, 5, 8, 13]  // Fibonacci sequence for story points
  * @param {PropertiesPanelProps} props - Component props
  * @returns {JSX.Element} The properties panel component
  */
-export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
+export function PropertiesPanel({ task, categories, users, onTaskUpdate }: PropertiesPanelProps) {
   // Show placeholder when no task is selected
   if (!task) {
     return (
@@ -88,11 +83,13 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
 
   /**
    * Updates the task's assignee
-   * @param {string} assigneeId - ID of the selected user
+   * @param {string} userId - ID of the selected user
    */
-  const handleAssigneeChange = (assigneeId: string) => {
-    const assignee = users.find(u => u.id === assigneeId)?.name || ''
-    onTaskUpdate({ ...task, assignee })
+  const handleAssigneeChange = (userId: string) => {
+    const user = users.find(u => u.id.toString() === userId)
+    if (user) {
+      onTaskUpdate({ ...task, assignee: user.name })
+    }
   }
 
   /**
@@ -108,7 +105,8 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
    * @param {string} label - Label to add
    */
   const handleAddLabel = (label: string) => {
-    onTaskUpdate({ ...task, labels: [...(task.labels || []), label] })
+    const labels = task.labels || []
+    onTaskUpdate({ ...task, labels: [...labels, label] })
   }
 
   /**
@@ -116,7 +114,8 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
    * @param {string} label - Label to remove
    */
   const handleRemoveLabel = (label: string) => {
-    onTaskUpdate({ ...task, labels: (task.labels || []).filter(l => l !== label) })
+    const labels = task.labels || []
+    onTaskUpdate({ ...task, labels: labels.filter(l => l !== label) })
   }
 
   /**
@@ -124,7 +123,8 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
    * @param {string} dependency - Task ID to add as dependency
    */
   const handleAddDependency = (dependency: string) => {
-    onTaskUpdate({ ...task, dependencies: [...(task.dependencies || []), dependency] })
+    const dependencies = task.dependencies || []
+    onTaskUpdate({ ...task, dependencies: [...dependencies, dependency] })
   }
 
   /**
@@ -132,15 +132,16 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
    * @param {string} dependency - Task ID to remove from dependencies
    */
   const handleRemoveDependency = (dependency: string) => {
+    const dependencies = task.dependencies || []
     onTaskUpdate({ 
       ...task, 
-      dependencies: (task.dependencies || []).filter(d => d !== dependency)
+      dependencies: dependencies.filter(d => d !== dependency)
     })
   }
 
   return (
     <div className="properties-panel">
-      <div className="p-4 space-y-4">
+      <div className="space-y-2">
         {/* Task ID */}
         <div className="property-section">
           <div className="property-label">ID</div>
@@ -152,16 +153,29 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
           <div className="property-label">Status</div>
           <Select.Root value={task.status} onValueChange={handleStatusChange}>
             <Select.Trigger className="SelectTrigger" data-type="status">
-              <Select.Value className="SelectValue">
-                <div className={`status-indicator status-${task.status}`} />
-                <span>{task.status.replace('-', ' ')}</span>
+              <Select.Value>
+                <div className="property-value-content">
+                  <div className={`status-indicator status-${task.status}`} />
+                  <span className="property-value-text">
+                    {task.status.replace('_', ' ')}
+                  </span>
+                </div>
               </Select.Value>
-              <Select.Icon className="SelectIcon">
-                <ChevronDown />
+              <Select.Icon>
+                <ChevronDown className="property-icon" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="SelectContent">
+              <Select.Content
+                position="popper"
+                sideOffset={4}
+                align="start"
+                className="SelectContent"
+                avoidCollisions
+              >
+                <Select.ScrollUpButton className="SelectScrollButton">
+                  <ChevronDown className="rotate-180" />
+                </Select.ScrollUpButton>
                 <Select.Viewport className="SelectViewport">
                   {statuses.map(status => (
                     <Select.Item
@@ -171,10 +185,15 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
                       data-type="status"
                     >
                       <div className={`status-indicator status-${status}`} />
-                      <Select.ItemText>{status.replace('-', ' ')}</Select.ItemText>
+                      <Select.ItemText>
+                        {status.replace('_', ' ')}
+                      </Select.ItemText>
                     </Select.Item>
                   ))}
                 </Select.Viewport>
+                <Select.ScrollDownButton className="SelectScrollButton">
+                  <ChevronDown />
+                </Select.ScrollDownButton>
               </Select.Content>
             </Select.Portal>
           </Select.Root>
@@ -183,28 +202,47 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
         {/* Assignee */}
         <div className="property-section">
           <div className="property-label">Assignee</div>
-          <Select.Root value={users.find(u => u.name === task.assignee)?.id || ''} onValueChange={handleAssigneeChange}>
+          <Select.Root 
+            value={users.find(u => u.name === task.assignee)?.id.toString() || ''} 
+            onValueChange={handleAssigneeChange}
+          >
             <Select.Trigger className="SelectTrigger">
-              <Select.Value className="SelectValue">
-                <span>{task.assignee || 'Unassigned'}</span>
+              <Select.Value>
+                <div className="property-value-content">
+                  <span className="property-value-text">
+                    {task.assignee || 'Unassigned'}
+                  </span>
+                </div>
               </Select.Value>
-              <Select.Icon className="SelectIcon">
-                <ChevronDown />
+              <Select.Icon>
+                <ChevronDown className="property-icon" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="SelectContent">
+              <Select.Content
+                position="popper"
+                sideOffset={4}
+                align="start"
+                className="SelectContent"
+                avoidCollisions
+              >
+                <Select.ScrollUpButton className="SelectScrollButton">
+                  <ChevronDown className="rotate-180" />
+                </Select.ScrollUpButton>
                 <Select.Viewport className="SelectViewport">
                   {users.map(user => (
                     <Select.Item
                       key={user.id}
-                      value={user.id}
+                      value={user.id.toString()}
                       className="SelectItem"
                     >
                       <Select.ItemText>{user.name}</Select.ItemText>
                     </Select.Item>
                   ))}
                 </Select.Viewport>
+                <Select.ScrollDownButton className="SelectScrollButton">
+                  <ChevronDown />
+                </Select.ScrollDownButton>
               </Select.Content>
             </Select.Portal>
           </Select.Root>
@@ -215,16 +253,27 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
           <div className="property-label">Priority</div>
           <Select.Root value={task.priority} onValueChange={handlePriorityChange}>
             <Select.Trigger className="SelectTrigger" data-type="priority">
-              <Select.Value className="SelectValue">
-                <div className={`priority-indicator priority-${task.priority}`} />
-                <span>{task.priority}</span>
+              <Select.Value>
+                <div className="property-value-content">
+                  <div className={`priority-indicator priority-${task.priority}`} />
+                  <span className="property-value-text">{task.priority}</span>
+                </div>
               </Select.Value>
-              <Select.Icon className="SelectIcon">
-                <ChevronDown />
+              <Select.Icon>
+                <ChevronDown className="property-icon" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="SelectContent">
+              <Select.Content
+                position="popper"
+                sideOffset={4}
+                align="start"
+                className="SelectContent"
+                avoidCollisions
+              >
+                <Select.ScrollUpButton className="SelectScrollButton">
+                  <ChevronDown className="rotate-180" />
+                </Select.ScrollUpButton>
                 <Select.Viewport className="SelectViewport">
                   {priorities.map(priority => (
                     <Select.Item
@@ -238,6 +287,9 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
                     </Select.Item>
                   ))}
                 </Select.Viewport>
+                <Select.ScrollDownButton className="SelectScrollButton">
+                  <ChevronDown />
+                </Select.ScrollDownButton>
               </Select.Content>
             </Select.Portal>
           </Select.Root>
@@ -246,17 +298,30 @@ export function PropertiesPanel({ task, onTaskUpdate }: PropertiesPanelProps) {
         {/* Story Points */}
         <div className="property-section">
           <div className="property-label">Story Points</div>
-          <Select.Root value={task.storyPoints?.toString() || ''} onValueChange={handlePointsChange}>
+          <Select.Root 
+            value={task.storyPoints?.toString() || ''} 
+            onValueChange={handlePointsChange}
+          >
             <Select.Trigger className="SelectTrigger">
-              <Select.Value className="SelectValue">
-                <span>{task.storyPoints || 'Not set'}</span>
+              <Select.Value>
+                <div className="property-value-content">
+                  <span className="property-value-text">
+                    {task.storyPoints || 'Unestimated'}
+                  </span>
+                </div>
               </Select.Value>
-              <Select.Icon className="SelectIcon">
-                <ChevronDown />
+              <Select.Icon>
+                <ChevronDown className="property-icon" />
               </Select.Icon>
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content className="SelectContent">
+              <Select.Content
+                position="popper"
+                sideOffset={4}
+                align="start"
+                className="SelectContent"
+                avoidCollisions
+              >
                 <Select.Viewport className="SelectViewport">
                   {points.map(point => (
                     <Select.Item
