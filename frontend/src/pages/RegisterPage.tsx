@@ -87,7 +87,7 @@ export default function RegisterPage() {
         <div className="auth-card">
           <div className="auth-header">
             <h1 className="logo">TaskFlow</h1>
-            <p className="description">Create an account to manage your tasks.</p>
+            <p className="description hero-message">Create an account to manage your tasks.</p>
           </div>
             
           <div className="auth-tabs">

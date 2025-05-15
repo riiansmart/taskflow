@@ -60,7 +60,7 @@ export default function LoginPage() {
         <div className="auth-card">
           <div className="auth-header">
             <h1 className="logo">TaskFlow</h1>
-            <p className="description">Manage your tasks seamlessly. Please login or register to continue.</p>
+            <p className="description hero-message">Manage your tasks seamlessly. Please login or register to continue.</p>
           </div>
             
           <div className="auth-tabs">
